@@ -13,6 +13,10 @@ Model Context Protocol (MCP) is a technology that allows AI assistants like Clau
 
 This MCP server connects Claude, Cursor, or other compatible AI assistants with your Bitbucket instance, allowing them to list repositories, access pull requests, and view commit information.
 
+<a href="https://glama.ai/mcp/servers/@aashari/mcp-server-atlassian-bitbucket">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@aashari/mcp-server-atlassian-bitbucket/badge" alt="Atlassian Bitbucket Server MCP server" />
+</a>
+
 ## Quick Start Guide
 
 ### Step 1: Set Up Authentication
