@@ -70,6 +70,10 @@ This server follows a "Minimal Interface, Maximal Detail" approach:
 - **Node.js and npm:** Ensure you have Node.js (which includes npm) installed. Download from [nodejs.org](https://nodejs.org/).
 - **Bitbucket Account:** An active Bitbucket Cloud account with access to the workspaces and repositories you want to connect to.
 
+<a href="https://glama.ai/mcp/servers/@aashari/mcp-server-atlassian-bitbucket">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@aashari/mcp-server-atlassian-bitbucket/badge" alt="Atlassian Bitbucket Server MCP server" />
+</a>
+
 ## Quick Start Guide
 
 Follow these steps to connect your AI assistant to Bitbucket:
