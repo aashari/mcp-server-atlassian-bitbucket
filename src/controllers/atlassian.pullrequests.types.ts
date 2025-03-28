@@ -74,3 +74,43 @@ export interface ListPullRequestCommentsOptions extends PaginationOptions {
 	 */
 	sort?: string;
 }
+
+/**
+ * Options for adding a comment to a pull request
+ */
+export interface AddPullRequestCommentOptions {
+	/**
+	 * The workspace slug
+	 */
+	workspaceSlug: string;
+
+	/**
+	 * The repository slug
+	 */
+	repoSlug: string;
+
+	/**
+	 * The pull request ID
+	 */
+	prId: string;
+
+	/**
+	 * The content of the comment
+	 */
+	content: string;
+
+	/**
+	 * Optional inline comment location
+	 */
+	inline?: {
+		/**
+		 * File path for the inline comment
+		 */
+		path: string;
+
+		/**
+		 * Line number for the inline comment
+		 */
+		line: number;
+	};
+}

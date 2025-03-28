@@ -187,6 +187,51 @@ export interface GetPullRequestCommentsParams {
 }
 
 /**
+ * Parameters for adding a comment to a pull request
+ */
+export interface AddPullRequestCommentParams {
+	/**
+	 * The workspace slug or UUID
+	 */
+	workspace: string;
+
+	/**
+	 * The repository slug or UUID
+	 */
+	repo_slug: string;
+
+	/**
+	 * The pull request ID
+	 */
+	pull_request_id: number;
+
+	/**
+	 * The content of the comment
+	 */
+	content: {
+		/**
+		 * Raw comment text (can contain markdown)
+		 */
+		raw: string;
+	};
+
+	/**
+	 * Optional inline comment location
+	 */
+	inline?: {
+		/**
+		 * The file path for the inline comment
+		 */
+		path: string;
+
+		/**
+		 * The line number in the file
+		 */
+		to?: number;
+	};
+}
+
+/**
  * Inline comment position information
  */
 export interface InlineCommentPosition {

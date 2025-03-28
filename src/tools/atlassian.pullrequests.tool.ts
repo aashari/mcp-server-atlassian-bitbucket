@@ -9,6 +9,8 @@ import {
 	GetPullRequestToolArgsType,
 	ListPullRequestCommentsToolArgs,
 	ListPullRequestCommentsToolArgsType,
+	AddPullRequestCommentToolArgs,
+	AddPullRequestCommentToolArgsType,
 } from './atlassian.pullrequests.types.js';
 
 import atlassianPullRequestsController from '../controllers/atlassian.pullrequests.controller.js';
@@ -175,6 +177,59 @@ async function listPullRequestComments(
 }
 
 /**
+ * MCP Tool: Add Comment to Bitbucket Pull Request
+ *
+ * Adds a new comment to a specific Bitbucket pull request.
+ * The comment can be either a general comment or an inline code comment.
+ *
+ * @param args - Tool arguments containing workspace, repository, PR identifiers, and comment content
+ * @param _extra - Extra request handler information (unused)
+ * @returns MCP response confirming the comment was added
+ * @throws Will return error message if comment addition fails
+ */
+async function addPullRequestComment(
+	args: AddPullRequestCommentToolArgsType,
+	_extra: RequestHandlerExtra,
+) {
+	const methodLogger = Logger.forContext(
+		'tools/atlassian.pullrequests.tool.ts',
+		'addPullRequestComment',
+	);
+
+	methodLogger.debug(
+		`Adding comment to pull request ${args.workspaceSlug}/${args.repoSlug}/${args.prId}`,
+		args,
+	);
+
+	try {
+		const message = await atlassianPullRequestsController.addComment({
+			workspaceSlug: args.workspaceSlug,
+			repoSlug: args.repoSlug,
+			prId: args.prId,
+			content: args.content,
+			inline: args.inline,
+		});
+
+		methodLogger.debug(
+			'Successfully added pull request comment',
+			message,
+		);
+
+		return {
+			content: [
+				{
+					type: 'text' as const,
+					text: message.content,
+				},
+			],
+		};
+	} catch (error) {
+		methodLogger.error('Failed to add pull request comment', error);
+		return formatErrorForMcpTool(error);
+	}
+}
+
+/**
  * Register Atlassian Pull Requests MCP Tools
  *
  * Registers the list-pull-requests and get-pull-request tools with the MCP server.
@@ -286,6 +341,39 @@ function register(server: McpServer) {
         - Permission errors: Ensure access to view the specified pull request comments.`,
 		ListPullRequestCommentsToolArgs.shape,
 		listPullRequestComments,
+	);
+
+	// Register the add pull request comment tool
+	server.tool(
+		'add_pr_comment',
+		`Add a comment to a specific Bitbucket pull request. Requires 'workspaceSlug', 'repoSlug', 'prId', and 'content'.
+
+        PURPOSE: Create comments on a pull request to provide feedback, ask questions, or communicate with other reviewers/developers. Supports both general PR comments and inline code comments.
+
+        WHEN TO USE:
+        - To provide feedback on a specific pull request.
+        - To add inline comments on specific lines of code.
+        - To respond to review feedback or discussions.
+        - When you need to add comments programmatically through the API.
+        - Requires known 'workspaceSlug', 'repoSlug', and 'prId'.
+
+        WHEN NOT TO USE:
+        - When you don't know the pull request ID (use 'list_pull_requests' first).
+        - When you need to read existing comments (use 'list_pr_comments').
+        - When you need to modify or delete existing comments (not supported).
+
+        RETURNS: Confirmation message indicating the comment was added successfully.
+
+        EXAMPLES:
+        - Add a general comment: { workspaceSlug: "my-team", repoSlug: "backend-api", prId: "42", content: "This looks good! Ready to merge." }
+        - Add an inline code comment: { workspaceSlug: "my-team", repoSlug: "backend-api", prId: "42", content: "Consider using a constant here.", inline: { path: "src/main.js", line: 42 } }
+
+        ERRORS:
+        - Pull Request not found: Verify 'workspaceSlug', 'repoSlug', and 'prId' are correct.
+        - Repository not found: Verify 'workspaceSlug' and 'repoSlug'.
+        - Permission errors: Ensure access to comment on the specified pull request.`,
+		AddPullRequestCommentToolArgs.shape,
+		addPullRequestComment,
 	);
 
 	methodLogger.debug('Successfully registered Atlassian Pull Requests tools');

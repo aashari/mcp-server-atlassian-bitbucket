@@ -160,3 +160,74 @@ export const ListPullRequestCommentsToolArgs = z.object({
 export type ListPullRequestCommentsToolArgsType = z.infer<
 	typeof ListPullRequestCommentsToolArgs
 >;
+
+/**
+ * Schema for add-pr-comment tool arguments
+ */
+export const AddPullRequestCommentToolArgs = z.object({
+	/**
+	 * Workspace slug containing the repository
+	 */
+	workspaceSlug: z
+		.string()
+		.min(1, 'Workspace slug is required')
+		.describe(
+			'Workspace slug containing the repository. Must be a valid workspace slug from your Bitbucket account. Example: "myteam"',
+		),
+
+	/**
+	 * Repository slug containing the pull request
+	 */
+	repoSlug: z
+		.string()
+		.min(1, 'Repository slug is required')
+		.describe(
+			'Repository slug containing the pull request. This must be a valid repository in the specified workspace. Example: "project-api"',
+		),
+
+	/**
+	 * Pull request identifier
+	 */
+	prId: z
+		.union([z.string(), z.number()])
+		.transform((value) =>
+			typeof value === 'string' ? value : String(value),
+		)
+		.describe(
+			'Numeric ID of the pull request to add a comment to. Must be a valid pull request ID in the specified repository. Example: 42',
+		),
+
+	/**
+	 * Comment content
+	 */
+	content: z
+		.string()
+		.min(1, 'Comment content is required')
+		.describe(
+			'The content of the comment to add to the pull request. Can include markdown formatting.',
+		),
+
+	/**
+	 * Optional inline location for the comment
+	 */
+	inline: z
+		.object({
+			path: z
+				.string()
+				.min(1, 'File path is required for inline comments')
+				.describe('The file path to add the comment to.'),
+			line: z
+				.number()
+				.int()
+				.positive()
+				.describe('The line number to add the comment to.'),
+		})
+		.optional()
+		.describe(
+			'Optional inline location for the comment. If provided, this will create a comment on a specific line in a file.',
+		),
+});
+
+export type AddPullRequestCommentToolArgsType = z.infer<
+	typeof AddPullRequestCommentToolArgs
+>;

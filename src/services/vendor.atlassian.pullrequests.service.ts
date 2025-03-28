@@ -11,6 +11,8 @@ import {
 	GetPullRequestParams,
 	GetPullRequestCommentsParams,
 	PullRequestCommentsResponse,
+	PullRequestComment,
+	AddPullRequestCommentParams,
 } from './vendor.atlassian.pullrequests.types.js';
 
 /**
@@ -238,4 +240,81 @@ async function getComments(
 	return fetchAtlassian<PullRequestCommentsResponse>(credentials, path);
 }
 
-export default { list, get, getComments };
+/**
+ * Add a comment to a specific Bitbucket pull request
+ *
+ * Creates a new comment on a pull request, either as a general comment or
+ * as an inline code comment attached to a specific file and line.
+ *
+ * @async
+ * @memberof VendorAtlassianPullRequestsService
+ * @param {AddPullRequestCommentParams} params - Parameters for the request
+ * @param {string} params.workspace - The workspace slug or UUID
+ * @param {string} params.repo_slug - The repository slug or UUID
+ * @param {number} params.pull_request_id - The ID of the pull request
+ * @param {Object} params.content - The content of the comment
+ * @param {string} params.content.raw - The raw text of the comment
+ * @param {Object} [params.inline] - Optional inline comment location
+ * @param {string} params.inline.path - The file path for the inline comment
+ * @param {number} params.inline.to - The line number in the file
+ * @returns {Promise<PullRequestComment>} Promise containing the created comment
+ * @throws {Error} If Atlassian credentials are missing or API request fails
+ * @example
+ * // Add a general comment to a pull request
+ * const comment = await addComment({
+ *   workspace: 'my-workspace',
+ *   repo_slug: 'my-repo',
+ *   pull_request_id: 123,
+ *   content: { raw: "This looks good to me!" }
+ * });
+ *
+ * // Add an inline code comment
+ * const comment = await addComment({
+ *   workspace: 'my-workspace',
+ *   repo_slug: 'my-repo',
+ *   pull_request_id: 123,
+ *   content: { raw: "Consider using a constant here instead." },
+ *   inline: { path: "src/main.js", to: 42 }
+ * });
+ */
+async function addComment(
+	params: AddPullRequestCommentParams,
+): Promise<PullRequestComment> {
+	const methodLogger = Logger.forContext(
+		'services/vendor.atlassian.pullrequests.service.ts',
+		'addComment',
+	);
+	methodLogger.debug(
+		`Adding comment to Bitbucket pull request: ${params.workspace}/${params.repo_slug}/${params.pull_request_id}`,
+	);
+
+	if (!params.workspace || !params.repo_slug || !params.pull_request_id) {
+		throw new Error(
+			'workspace, repo_slug, and pull_request_id parameters are all required',
+		);
+	}
+
+	if (!params.content || !params.content.raw) {
+		throw new Error('Comment content is required');
+	}
+
+	const credentials = getAtlassianCredentials();
+	if (!credentials) {
+		throw createAuthMissingError(
+			'Atlassian credentials are required for this operation',
+		);
+	}
+
+	const path = `${API_PATH}/repositories/${params.workspace}/${params.repo_slug}/pullrequests/${params.pull_request_id}/comments`;
+
+	methodLogger.debug(`Sending POST request to: ${path}`);
+	return fetchAtlassian<PullRequestComment>(credentials, path, {
+		method: 'POST',
+		body: JSON.stringify({
+			content: params.content,
+			inline: params.inline,
+		}),
+	});
+}
+
+export default { list, get, getComments, addComment };

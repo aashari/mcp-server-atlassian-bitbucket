@@ -11,6 +11,7 @@ import {
 	ListPullRequestsOptions,
 	PullRequestIdentifier,
 	ListPullRequestCommentsOptions,
+	AddPullRequestCommentOptions,
 } from './atlassian.pullrequests.types.js';
 import {
 	formatPullRequestsList,
@@ -24,6 +25,7 @@ import {
 } from '../services/vendor.atlassian.pullrequests.types.js';
 import { formatBitbucketQuery } from '../utils/query.util.js';
 import { DEFAULT_PAGE_SIZE, applyDefaults } from '../utils/defaults.util.js';
+import { AddPullRequestCommentParams } from '../services/vendor.atlassian.pullrequests.types.js';
 
 /**
  * Controller for managing Bitbucket pull requests.
@@ -285,4 +287,84 @@ async function listComments(
 	}
 }
 
-export default { list, get, listComments };
+/**
+ * Add a comment to a specific Bitbucket pull request
+ * @param options - Options for adding a comment to a pull request
+ * @param options.workspaceSlug - The workspace slug containing the repository
+ * @param options.repoSlug - The repository slug containing the pull request
+ * @param options.prId - The pull request ID
+ * @param options.content - The content of the comment
+ * @param options.inline - Optional inline comment location
+ * @returns Promise with the result of adding the comment
+ */
+async function addComment(
+	options: AddPullRequestCommentOptions,
+): Promise<ControllerResponse> {
+	const methodLogger = Logger.forContext(
+		'controllers/atlassian.pullrequests.controller.ts',
+		'addComment',
+	);
+	methodLogger.debug('Adding comment to Bitbucket pull request...', options);
+
+	try {
+		if (!options.workspaceSlug || !options.repoSlug || !options.prId) {
+			throw createApiError(
+				'workspaceSlug, repoSlug, and prId parameters are all required',
+			);
+		}
+
+		if (!options.content) {
+			throw createApiError('Comment content is required');
+		}
+
+		// Validate pull request ID
+		const prId = parseInt(options.prId, 10);
+		if (isNaN(prId) || prId <= 0) {
+			throw createApiError('Pull request ID must be a positive integer');
+		}
+
+		// Map controller options to service params
+		const serviceParams: AddPullRequestCommentParams = {
+			workspace: options.workspaceSlug,
+			repo_slug: options.repoSlug,
+			pull_request_id: prId,
+			content: {
+				raw: options.content,
+			},
+		};
+
+		// Add inline comment parameters if provided
+		if (options.inline && options.inline.path) {
+			serviceParams['inline'] = {
+				path: options.inline.path,
+				to: options.inline.line,
+			};
+		}
+
+		methodLogger.debug('Using service parameters:', serviceParams);
+
+		// Call the service to add the comment
+		const commentData = await atlassianPullRequestsService.addComment(serviceParams);
+
+		methodLogger.debug(`Successfully added comment: ${commentData.id}`);
+
+		return {
+			content: `Comment added successfully to pull request #${options.prId}.`,
+		};
+	} catch (error) {
+		// Use the standardized error handler
+		handleControllerError(error, {
+			entityType: 'Pull Request Comment',
+			operation: 'adding',
+			source: 'controllers/atlassian.pullrequests.controller.ts@addComment',
+			additionalInfo: {
+				options,
+				workspaceSlug: options.workspaceSlug,
+				repoSlug: options.repoSlug,
+				prId: options.prId,
+			},
+		});
+	}
+}
+
+export default { list, get, listComments, addComment };
