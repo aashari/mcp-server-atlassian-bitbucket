@@ -68,10 +68,7 @@ function register(program: Command) {
 					repoSlug: options.repoSlug,
 					sourceBranch: options.sourceBranch,
 					destinationBranch: options.destinationBranch,
-					includeFullDiff:
-						options.fullDiff !== undefined
-							? options.fullDiff
-							: true,
+					includeFullDiff: options.fullDiff, // Pass the value directly (it will be boolean or undefined)
 					limit: options.limit
 						? parseInt(options.limit, 10)
 						: undefined,
@@ -143,10 +140,7 @@ function register(program: Command) {
 					repoSlug: options.repoSlug,
 					sinceCommit: options.sinceCommit,
 					untilCommit: options.untilCommit,
-					includeFullDiff:
-						options.fullDiff !== undefined
-							? options.fullDiff
-							: true,
+					includeFullDiff: options.fullDiff, // Pass the value directly (it will be boolean or undefined)
 					limit: options.limit
 						? parseInt(options.limit, 10)
 						: undefined,

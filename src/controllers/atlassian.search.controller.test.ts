@@ -86,9 +86,9 @@ describe('Atlassian Search Controller', () => {
 			}
 
 			const result = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
-				repo: repoInfo.repoSlug,
-				type: 'code',
+				workspaceSlug: repoInfo.workspaceSlug,
+				repoSlug: repoInfo.repoSlug,
+				scope: 'code',
 				query: 'initial commit',
 			});
 
@@ -110,8 +110,8 @@ describe('Atlassian Search Controller', () => {
 			}
 
 			const result = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
-				type: 'repositories',
+				workspaceSlug: repoInfo.workspaceSlug,
+				scope: 'repositories',
 				query: repoInfo.repoSlug,
 			});
 
@@ -134,9 +134,9 @@ describe('Atlassian Search Controller', () => {
 			}
 
 			const result = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
-				repo: repoInfo.repoSlug,
-				type: 'pullrequests',
+				workspaceSlug: repoInfo.workspaceSlug,
+				repoSlug: repoInfo.repoSlug,
+				scope: 'pullrequests',
 				query: 'test',
 			});
 
@@ -160,9 +160,9 @@ describe('Atlassian Search Controller', () => {
 
 			// Use a query that might match something (repository name itself often works)
 			const result = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
+				workspaceSlug: repoInfo.workspaceSlug,
 				query: repoInfo.repoSlug,
-				type: 'repositories',
+				scope: 'repositories',
 			});
 
 			// Verify the response structure
@@ -189,8 +189,8 @@ describe('Atlassian Search Controller', () => {
 
 			// Fetch first page with limit 1
 			const result1 = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
-				type: 'repositories',
+				workspaceSlug: repoInfo.workspaceSlug,
+				scope: 'repositories',
 				limit: 1,
 				query: repoInfo.repoSlug,
 			});
@@ -207,8 +207,8 @@ describe('Atlassian Search Controller', () => {
 			// If pagination is possible, test cursor-based pagination
 			if (hasMoreResults && nextCursor) {
 				const result2 = await atlassianSearchController.search({
-					workspace: repoInfo.workspaceSlug,
-					type: 'repositories',
+					workspaceSlug: repoInfo.workspaceSlug,
+					scope: 'repositories',
 					limit: 1,
 					cursor: nextCursor,
 					query: repoInfo.repoSlug,
@@ -229,10 +229,16 @@ describe('Atlassian Search Controller', () => {
 		it('should give an error when workspace is missing or empty', async () => {
 			if (skipIfNoCredentials()) return;
 
+			// Mock the getDefaultWorkspace function to return null to ensure no default workspace is available
+			jest.spyOn(
+				require('../utils/workspace.util.js'),
+				'getDefaultWorkspace',
+			).mockResolvedValueOnce(null);
+
 			// Empty workspace should return an error message
 			const result = await atlassianSearchController.search({
-				type: 'repositories',
-				workspace: '', // Empty workspace should trigger error
+				scope: 'repositories',
+				workspaceSlug: '', // Empty workspace should trigger error
 				query: 'test',
 			});
 
@@ -243,6 +249,9 @@ describe('Atlassian Search Controller', () => {
 			// Content should include error message
 			expect(result.content).toContain('Error:');
 			expect(result.content).toContain('workspace');
+
+			// Restore the original implementation
+			jest.restoreAllMocks();
 		}, 30000);
 
 		it('should work without a repo when type=repositories', async () => {
@@ -256,8 +265,8 @@ describe('Atlassian Search Controller', () => {
 
 			// Should not throw an error when repo is missing but type is repositories
 			const result = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
-				type: 'repositories',
+				workspaceSlug: repoInfo.workspaceSlug,
+				scope: 'repositories',
 				query: repoInfo.repoSlug,
 			});
 
@@ -277,8 +286,8 @@ describe('Atlassian Search Controller', () => {
 
 			// When searching pull requests without a repo, should return an error message
 			const result = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
-				type: 'pullrequests',
+				workspaceSlug: repoInfo.workspaceSlug,
+				scope: 'pullrequests',
 				query: 'test',
 				// Intentionally omit repo
 			});
@@ -301,10 +310,10 @@ describe('Atlassian Search Controller', () => {
 			const noMatchQuery = 'xzqwxtrv12345xyz987nonexistentstring';
 
 			const result = await atlassianSearchController.search({
-				workspace: repoInfo.workspaceSlug,
+				workspaceSlug: repoInfo.workspaceSlug,
 				query: noMatchQuery,
-				type: 'code',
-				repo: repoInfo.repoSlug,
+				scope: 'code',
+				repoSlug: repoInfo.repoSlug,
 			});
 
 			// Verify the response structure
@@ -324,8 +333,8 @@ describe('Atlassian Search Controller', () => {
 			// Expect the controller call to reject when underlying controllers fail
 			await expect(
 				atlassianSearchController.search({
-					workspace: invalidWorkspace,
-					type: 'repositories',
+					workspaceSlug: invalidWorkspace,
+					scope: 'repositories',
 					query: 'test-query', // Add a query to avoid the query validation error
 				}),
 			).rejects.toThrow();

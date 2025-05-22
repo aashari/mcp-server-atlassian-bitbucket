@@ -1,26 +1,8 @@
 import { z } from 'zod';
-
-/**
- * Base pagination arguments for all tools
- */
-const PaginationArgs = {
-	limit: z
-		.number()
-		.int()
-		.positive()
-		.max(100)
-		.optional()
-		.describe(
-			'Maximum number of items to return (1-100). Controls the response size. Defaults to 25 if omitted.',
-		),
-
-	cursor: z
-		.string()
-		.optional()
-		.describe(
-			'Pagination cursor for retrieving the next set of results. Obtained from previous response when more results are available.',
-		),
-};
+import {
+	CommonToolPaginationArgs,
+	CommonRepoIdentifierArgs,
+} from './common.tool.types.js';
 
 /**
  * Schema for list-repositories tool arguments
@@ -77,7 +59,7 @@ export const ListRepositoriesToolArgs = z.object({
 	/**
 	 * Maximum number of repositories to return (default: 25)
 	 */
-	...PaginationArgs,
+	...CommonToolPaginationArgs.shape,
 });
 
 export type ListRepositoriesToolArgsType = z.infer<
@@ -87,46 +69,14 @@ export type ListRepositoriesToolArgsType = z.infer<
 /**
  * Schema for get-repository tool arguments
  */
-export const GetRepositoryToolArgs = z.object({
-	/**
-	 * Workspace slug containing the repository
-	 */
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace (either configured via BITBUCKET_DEFAULT_WORKSPACE or the first workspace in your account). Example: "myteam"',
-		),
-
-	/**
-	 * Repository slug to retrieve
-	 */
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe(
-			'Repository slug to retrieve. This must be a valid repository in the specified workspace. Example: "project-api"',
-		),
-});
+export const GetRepositoryToolArgs = CommonRepoIdentifierArgs.extend({});
 
 export type GetRepositoryToolArgsType = z.infer<typeof GetRepositoryToolArgs>;
 
 /**
  * Schema for get-commit-history tool arguments.
  */
-export const GetCommitHistoryToolArgs = z.object({
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace. Example: "myteam"',
-		),
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe(
-			'Repository slug whose commit history is to be retrieved. Example: "project-api"',
-		),
+export const GetCommitHistoryToolArgs = CommonRepoIdentifierArgs.extend({
 	revision: z
 		.string()
 		.optional()
@@ -139,7 +89,7 @@ export const GetCommitHistoryToolArgs = z.object({
 		.describe(
 			'Optional file path to filter commit history. Only shows commits affecting this file.',
 		),
-	...PaginationArgs, // Includes limit and cursor
+	...CommonToolPaginationArgs.shape, // Includes limit and cursor
 });
 
 export type GetCommitHistoryToolArgsType = z.infer<
@@ -149,17 +99,7 @@ export type GetCommitHistoryToolArgsType = z.infer<
 /**
  * Schema for create-branch tool arguments.
  */
-export const CreateBranchToolArgsSchema = z.object({
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace (either configured via BITBUCKET_DEFAULT_WORKSPACE or the first workspace in your account). Example: "myteam"',
-		),
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe('Repository slug where the branch will be created.'),
+export const CreateBranchToolArgsSchema = CommonRepoIdentifierArgs.extend({
 	newBranchName: z
 		.string()
 		.min(1, 'New branch name is required')
@@ -177,19 +117,7 @@ export type CreateBranchToolArgsType = z.infer<
 /**
  * Schema for clone-repository tool arguments.
  */
-export const CloneRepositoryToolArgs = z.object({
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Bitbucket workspace slug containing the repository. If not provided, the tool will use your default workspace (either configured via BITBUCKET_DEFAULT_WORKSPACE or the first workspace in your account). Example: "myteam"',
-		),
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe(
-			'Repository name/slug to clone. This is the short name of the repository. Example: "project-api"',
-		),
+export const CloneRepositoryToolArgs = CommonRepoIdentifierArgs.extend({
 	targetPath: z
 		.string()
 		.min(1, 'Target path is required')
@@ -205,19 +133,7 @@ export type CloneRepositoryToolArgsType = z.infer<
 /**
  * Schema for get-file-content tool arguments.
  */
-export const GetFileContentToolArgs = z.object({
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace. Example: "myteam"',
-		),
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe(
-			'Repository slug containing the file. Example: "project-api"',
-		),
+export const GetFileContentToolArgs = CommonRepoIdentifierArgs.extend({
 	filePath: z
 		.string()
 		.min(1, 'File path is required')
@@ -237,27 +153,7 @@ export type GetFileContentToolArgsType = z.infer<typeof GetFileContentToolArgs>;
 /**
  * Schema for list-branches tool arguments
  */
-export const ListBranchesToolArgs = z.object({
-	/**
-	 * Workspace slug containing the repository
-	 */
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace. Example: "myteam"',
-		),
-
-	/**
-	 * Repository slug to list branches from
-	 */
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe(
-			'Repository slug to list branches from. Must be a valid repository slug in the specified workspace. Example: "project-api"',
-		),
-
+export const ListBranchesToolArgs = CommonRepoIdentifierArgs.extend({
 	/**
 	 * Optional query to filter branches
 	 */
@@ -281,7 +177,7 @@ export const ListBranchesToolArgs = z.object({
 	/**
 	 * Maximum number of branches to return (default: 25)
 	 */
-	...PaginationArgs,
+	...CommonToolPaginationArgs.shape,
 });
 
 export type ListBranchesToolArgsType = z.infer<typeof ListBranchesToolArgs>;
