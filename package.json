@@ -87,7 +87,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.11.4",
+		"@modelcontextprotocol/sdk": "^1.12.1",
 		"commander": "^14.0.0",
 		"dotenv": "^16.5.0",
 		"turndown": "^7.2.0",
