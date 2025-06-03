@@ -243,7 +243,7 @@ export type Commit = z.infer<typeof CommitSchema>;
  * API response for listing commits (paginated).
  */
 export const PaginatedCommitsSchema = z.object({
-	pagelen: z.number(),
+	pagelen: z.number().optional(),
 	page: z.number().optional(),
 	size: z.number().optional(),
 	next: z.string().optional(),

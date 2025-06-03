@@ -1,4 +1,5 @@
 import { Logger } from '../utils/logger.util.js';
+import { getDefaultWorkspace } from '../utils/workspace.util.js';
 import { ContentType } from '../utils/atlassian.util.js';
 import { handleCodeSearch } from './atlassian.search.code.controller.js';
 import { handleContentSearch } from './atlassian.search.content.controller.js';
@@ -16,13 +17,13 @@ const logger = Logger.forContext('controllers/atlassian.search.controller.ts');
  */
 export interface SearchOptions {
 	/** The workspace to search in */
-	workspace?: string;
+	workspaceSlug?: string;
 	/** The repository to search in (optional) */
-	repo?: string;
+	repoSlug?: string;
 	/** The search query */
 	query?: string;
 	/** The type of search to perform */
-	type?: string;
+	scope?: string;
 	/** The content type to filter by (for content search) */
 	contentType?: string;
 	/** The language to filter by (for code search) */
@@ -47,20 +48,31 @@ async function search(
 	const methodLogger = logger.forMethod('search');
 
 	try {
+		// Get default workspace if not provided
+		if (!options.workspaceSlug) {
+			const defaultWorkspace = await getDefaultWorkspace();
+			if (defaultWorkspace) {
+				options.workspaceSlug = defaultWorkspace;
+				methodLogger.debug(
+					`Using default workspace: ${options.workspaceSlug}`,
+				);
+			}
+		}
+
 		// Apply default values
 		const defaults: Partial<SearchOptions> = {
-			type: 'code',
-			workspace: '',
+			scope: 'code',
 			limit: DEFAULT_PAGE_SIZE,
 		};
 		const params = applyDefaults<SearchOptions>(options, defaults);
 		methodLogger.debug('Search options (with defaults):', params);
 
 		// Validate parameters
-		if (!params.workspace) {
+		if (!params.workspaceSlug) {
 			methodLogger.warn('No workspace provided for search');
 			return {
-				content: 'Error: Please provide a workspace to search in.',
+				content:
+					'Error: Please provide a workspace to search in (or ensure a default workspace is configured).',
 			};
 		}
 
@@ -71,11 +83,11 @@ async function search(
 		}
 
 		// Dispatch to the appropriate search function based on type
-		switch (params.type?.toLowerCase()) {
+		switch (params.scope?.toLowerCase()) {
 			case 'code':
 				return await handleCodeSearch(
-					params.workspace,
-					params.repo,
+					params.workspaceSlug,
+					params.repoSlug,
 					params.query,
 					params.limit,
 					params.cursor,
@@ -85,8 +97,8 @@ async function search(
 
 			case 'content':
 				return await handleContentSearch(
-					params.workspace,
-					params.repo,
+					params.workspaceSlug,
+					params.repoSlug,
 					params.query,
 					params.limit,
 					params.cursor,
@@ -96,8 +108,8 @@ async function search(
 			case 'repos':
 			case 'repositories':
 				return await handleRepositorySearch(
-					params.workspace,
-					params.repo,
+					params.workspaceSlug,
+					params.repoSlug,
 					params.query,
 					params.limit,
 					params.cursor,
@@ -105,24 +117,24 @@ async function search(
 
 			case 'prs':
 			case 'pullrequests':
-				if (!params.repo) {
+				if (!params.repoSlug) {
 					return {
 						content:
 							'Error: Repository is required for pull request search.',
 					};
 				}
 				return await handlePullRequestSearch(
-					params.workspace,
-					params.repo,
+					params.workspaceSlug,
+					params.repoSlug,
 					params.query,
 					params.limit,
 					params.cursor,
 				);
 
 			default:
-				methodLogger.warn(`Unknown search type: ${params.type}`);
+				methodLogger.warn(`Unknown search scope: ${params.scope}`);
 				return {
-					content: `Error: Unknown search type "${params.type}". Supported types are: code, content, repositories, pullrequests.`,
+					content: `Error: Unknown search scope "${params.scope}". Supported types are: code, content, repositories, pullrequests.`,
 				};
 		}
 	} catch (error) {
@@ -131,7 +143,7 @@ async function search(
 			entityType: 'Search',
 			operation: 'search',
 			source: 'controllers/atlassian.search.controller.ts@search',
-			additionalInfo: options as Record<string, unknown>,
+			additionalInfo: options as Record<string, unknown>, // options still reflects original call
 		});
 	}
 }

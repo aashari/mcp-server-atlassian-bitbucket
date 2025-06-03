@@ -2,7 +2,6 @@ import { Command } from 'commander';
 import { Logger } from '../utils/logger.util.js';
 import atlassianSearchController from '../controllers/atlassian.search.controller.js';
 import { handleCliError } from '../utils/error-handler.util.js';
-import { getDefaultWorkspace } from '../utils/workspace.util.js';
 
 // Set up a logger for this module
 const logger = Logger.forContext('cli/atlassian.search.cli.ts');
@@ -42,25 +41,13 @@ function register(program: Command) {
 			try {
 				methodLogger.debug('CLI search command called with:', options);
 
-				// Handle workspace
-				let workspace = options.workspace;
-				if (!workspace) {
-					workspace = await getDefaultWorkspace();
-					if (!workspace) {
-						console.error(
-							'Error: No workspace provided and no default workspace configured',
-						);
-						process.exit(1);
-					}
-					methodLogger.debug(`Using default workspace: ${workspace}`);
-				}
-
 				// Prepare controller options
+				// The controller now handles default workspace logic
 				const controllerOptions = {
-					workspace,
-					repo: options.repo,
+					workspaceSlug: options.workspace,
+					repoSlug: options.repo,
 					query: options.query,
-					type: options.type,
+					scope: options.type,
 					contentType: options.contentType,
 					language: options.language,
 					extension: options.extension,

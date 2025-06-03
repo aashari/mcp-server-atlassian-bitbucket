@@ -1,29 +1,10 @@
 import { z } from 'zod';
+import { CommonRepoIdentifierArgs } from './common.tool.types.js';
 
 /**
  * Schema for the branch diff tool arguments
  */
-export const BranchDiffArgsSchema = z.object({
-	/**
-	 * Workspace slug containing the repository
-	 */
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace (either configured via BITBUCKET_DEFAULT_WORKSPACE or the first workspace in your account). Example: "myteam"',
-		),
-
-	/**
-	 * Repository slug containing the branches
-	 */
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe(
-			'Repository slug containing the branches. Must be a valid repository slug in the specified workspace. Example: "project-api"',
-		),
-
+export const BranchDiffArgsSchema = CommonRepoIdentifierArgs.extend({
 	/**
 	 * Source branch (feature branch)
 	 */
@@ -80,17 +61,7 @@ export type BranchDiffArgsType = z.infer<typeof BranchDiffArgsSchema>;
 /**
  * Schema for the commit diff tool arguments
  */
-export const CommitDiffArgsSchema = z.object({
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace.',
-		),
-	repoSlug: z
-		.string()
-		.min(1)
-		.describe('Repository slug to compare commits in'),
+export const CommitDiffArgsSchema = CommonRepoIdentifierArgs.extend({
 	sinceCommit: z
 		.string()
 		.min(1)
