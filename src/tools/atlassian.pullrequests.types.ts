@@ -251,6 +251,9 @@ export const CreatePullRequestCommentToolArgs = z.object({
 		),
 });
 
+/**
+ * Type for create pull request comment tool arguments (inferred from schema)
+ */
 export type CreatePullRequestCommentToolArgsType = z.infer<
 	typeof CreatePullRequestCommentToolArgs
 >;
