@@ -335,6 +335,7 @@ async function createComment(
 		body: {
 			content: params.content,
 			inline: params.inline,
+			parent: params.parent,
 		},
 	});
 }

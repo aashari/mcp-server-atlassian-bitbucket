@@ -64,6 +64,9 @@ export type CreateCommentParams = {
 		path: string;
 		to?: number;
 	};
+	parent?: {
+		id: number;
+	};
 };
 
 // Helper function to enhance comments with code snippets
