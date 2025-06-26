@@ -229,6 +229,13 @@ export interface CreatePullRequestCommentParams {
 		 */
 		to?: number;
 	};
+
+	/**
+	 * For threaded comments, ID of the parent comment
+	 */
+	parent?: {
+		id: number;
+	};
 }
 
 /**

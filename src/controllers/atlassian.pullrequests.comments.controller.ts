@@ -230,6 +230,13 @@ async function addComment(
 			};
 		}
 
+		// For replies, add the parent property
+		if (mergedOptions.parentId) {
+			serviceParams.parent = {
+				id: parseInt(mergedOptions.parentId, 10),
+			};
+		}
+
 		// Create the comment through the service
 		const commentResult =
 			await atlassianPullRequestsService.createComment(serviceParams);

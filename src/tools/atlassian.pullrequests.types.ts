@@ -242,6 +242,13 @@ export const CreatePullRequestCommentToolArgs = z.object({
 		.describe(
 			'Optional inline location for the comment. If provided, this will create a comment on a specific line in a file.',
 		),
+
+	parentId: z
+		.string()
+		.optional()
+		.describe(
+			'The ID of the parent comment to reply to. If not provided, the comment will be a top-level comment.',
+		),
 });
 
 export type CreatePullRequestCommentToolArgsType = z.infer<
