@@ -512,6 +512,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 			expect(result.stdout).toContain('--content');
 			expect(result.stdout).toContain('--path');
 			expect(result.stdout).toContain('--line');
+			expect(result.stdout).toContain('--parent-id');
 		});
 
 		it('should require repo-slug parameter', async () => {
@@ -580,6 +581,26 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 			expect(result.stderr).toContain(
 				'Both -f/--path and -L/--line are required for inline comments',
 			);
+		});
+
+		it('should accept valid parentId parameter for comment replies', async () => {
+			const result = await CliTestUtil.runCommand([
+				'add-pr-comment',
+				'--workspace-slug',
+				'codapayments',
+				'--repo-slug',
+				'repo-1',
+				'--pr-id',
+				'1',
+				'--content',
+				'This is a reply',
+				'--parent-id',
+				'123',
+			]);
+			// Should fail due to invalid repo/PR, but not due to parentId parameter validation
+			expect(result.exitCode).not.toBe(0);
+			// Should NOT contain parameter validation errors for parentId
+			expect(result.stderr).not.toContain('parent-id');
 		});
 
 		// Note: API call test has been removed to avoid creating comments on real PRs during tests

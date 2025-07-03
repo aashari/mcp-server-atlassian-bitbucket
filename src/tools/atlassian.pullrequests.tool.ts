@@ -390,7 +390,7 @@ function registerTools(server: McpServer) {
 	// Register the add pull request comment tool
 	server.tool(
 		'bb_add_pr_comment',
-		`Adds a comment to a specific pull request identified by \`prId\` within a repository (\`repoSlug\`). If \`workspaceSlug\` is not provided, the system will use your default workspace. The \`content\` parameter accepts Markdown-formatted text for the comment body. For inline code comments, provide both \`inline.path\` (file path) and \`inline.line\` (line number). Returns a success message as formatted Markdown. Requires Bitbucket credentials with write permissions to be configured.`,
+		`Adds a comment to a specific pull request identified by \`prId\` within a repository (\`repoSlug\`). If \`workspaceSlug\` is not provided, the system will use your default workspace. The \`content\` parameter accepts Markdown-formatted text for the comment body. To reply to an existing comment, provide its ID in the \`parentId\` parameter. For inline code comments, provide both \`inline.path\` (file path) and \`inline.line\` (line number). Returns a success message as formatted Markdown. Requires Bitbucket credentials with write permissions to be configured.`,
 		CreatePullRequestCommentToolArgs.shape,
 		addPullRequestComment,
 	);

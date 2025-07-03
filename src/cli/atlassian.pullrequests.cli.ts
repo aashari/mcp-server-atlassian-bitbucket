@@ -275,6 +275,10 @@ function registerAddPullRequestCommentCommand(program: Command): void {
 			'Optional: The line number to add the inline comment to.',
 			parseInt,
 		)
+		.option(
+			'--parent-id <id>',
+			'Optional: The ID of the parent comment to reply to. If provided, this comment will be a reply to the specified comment.',
+		)
 		.action(async (options) => {
 			const actionLogger = Logger.forContext(
 				'cli/atlassian.pullrequests.cli.ts',
@@ -293,6 +297,7 @@ function registerAddPullRequestCommentCommand(program: Command): void {
 						path: string;
 						line: number;
 					};
+					parentId?: string;
 				} = {
 					workspaceSlug: options.workspaceSlug,
 					repoSlug: options.repoSlug,
@@ -310,6 +315,11 @@ function registerAddPullRequestCommentCommand(program: Command): void {
 					throw new Error(
 						'Both -f/--path and -L/--line are required for inline comments',
 					);
+				}
+
+				// Add parent ID if provided
+				if (options.parentId) {
+					params.parentId = options.parentId;
 				}
 
 				actionLogger.debug('Creating pull request comment:', {
