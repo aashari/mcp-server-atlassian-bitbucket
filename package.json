@@ -94,7 +94,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.13.0",
+		"@modelcontextprotocol/sdk": "^1.15.1",
 		"commander": "^14.0.0",
 		"cors": "^2.8.5",
 		"dotenv": "^17.0.0",
