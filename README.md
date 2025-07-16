@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aashari-mcp-server-atlassian-bitbucket-badge.png)](https://mseep.ai/app/aashari-mcp-server-atlassian-bitbucket)
+
 # Atlassian Bitbucket MCP Server
 
 This project provides a Model Context Protocol (MCP) server that acts as a bridge between AI assistants (like Anthropic's Claude, Cursor AI, or other MCP-compatible clients) and your Atlassian Bitbucket instance. It allows AI to securely access and interact with your repositories, pull requests, and workspaces in real time.
