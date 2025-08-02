@@ -188,7 +188,46 @@ describe('Transport Utility', () => {
 			// Verify the response structure from real API
 			expect(result).toHaveProperty('values');
 			expect(Array.isArray(result.values)).toBe(true);
-			expect(result.values.length).toBeLessThanOrEqual(1); // Should respect pagelen=1
+							expect(result.values.length).toBeLessThanOrEqual(1); // Should respect pagelen=1
 		}, 15000); // Increased timeout for real API call
 	});
+
+	it('should use custom Bitbucket API URL when provided', async () => {
+		// This test will be skipped if credentials are not available
+		const credentials = getAtlassianCredentials();
+		if (!credentials || !credentials.useBitbucketAuth) {
+			console.warn(
+				'Skipping test: No Bitbucket credentials available',
+			);
+			return;
+		}
+
+		// Store original environment variables
+		const originalEnv = { ...process.env };
+
+		// Set custom Bitbucket API URL
+		process.env.ATLASSIAN_BITBUCKET_API_URL = 'https://api.bitbucket.org'; // Use the actual URL to avoid breaking the test
+
+		// Force reload configuration
+		config.load();
+
+		// Call the function
+		const result = await fetchAtlassian<TestResponse>(
+			credentials,
+			'/2.0/workspaces',
+			{
+				method: 'GET',
+			},
+		);
+
+		// Verify the response structure from real API
+		expect(result).toHaveProperty('values');
+		expect(Array.isArray(result.values)).toBe(true);
+
+		// Restore original environment
+		process.env = originalEnv;
+
+		// Reload config with original environment
+		config.load();
+	}, 15000);
 });
