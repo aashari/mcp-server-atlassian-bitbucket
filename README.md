@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/aashari-mcp-server-atlassian-bitbucket-badge.png)](https://mseep.ai/app/aashari-mcp-server-atlassian-bitbucket)
+
 # Atlassian Bitbucket MCP Server
 
 A Node.js/TypeScript Model Context Protocol (MCP) server for Atlassian Bitbucket Cloud. Enables AI systems (e.g., LLMs like Claude or Cursor AI) to securely interact with your repositories, pull requests, workspaces, and code in real time.
