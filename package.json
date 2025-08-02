@@ -100,7 +100,7 @@
 		"dotenv": "^17.2.1",
 		"express": "^5.1.0",
 		"turndown": "^7.2.0",
-		"zod": "^3.25.67"
+		"zod": "^4.0.14"
 	},
 	"directories": {
 		"example": "examples"
