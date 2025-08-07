@@ -106,7 +106,8 @@ export async function fetchAtlassian<T>(
 
 	if (credentials.useBitbucketAuth) {
 		// Bitbucket API uses a different base URL and auth format
-		baseUrl = 'https://api.bitbucket.org';
+		const customBitbucketUrl = config.get('ATLASSIAN_BITBUCKET_API_URL');
+		baseUrl = customBitbucketUrl || 'https://api.bitbucket.org';
 		if (
 			!credentials.bitbucketUsername ||
 			!credentials.bitbucketAppPassword
