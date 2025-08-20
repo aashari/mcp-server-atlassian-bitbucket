@@ -4,6 +4,8 @@ Transform how you work with Bitbucket by connecting Claude, Cursor AI, and other
 
 [![NPM Version](https://img.shields.io/npm/v/@aashari/mcp-server-atlassian-bitbucket)](https://www.npmjs.com/package/@aashari/mcp-server-atlassian-bitbucket)
 
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/aashari/mcp-server-atlassian-bitbucket)](https://archestra.ai/mcp-catalog/aashari__mcp-server-atlassian-bitbucket)
+
 ## What You Can Do
 
 ✅ **Ask AI about your code**: "What's the latest commit in my main repository?"  
