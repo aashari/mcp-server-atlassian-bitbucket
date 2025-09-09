@@ -56,7 +56,9 @@ class ConfigLoader {
 			'loadFromEnvFile',
 		);
 		try {
-			const result = dotenv.config();
+			// Use quiet mode to prevent dotenv from outputting to STDIO
+			// which interferes with MCP's JSON-RPC communication
+			const result = dotenv.config({ quiet: true });
 			if (result.error) {
 				methodLogger.debug('No .env file found or error reading it');
 				return;
