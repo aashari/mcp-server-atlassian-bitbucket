@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.43.4...v1.44.0) (2025-09-09)
+
+
+### Features
+
+* modernize dependencies and ensure Zod v3.25.76 MCP SDK compatibility ([#115](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues/115)) ([86ceaeb](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/86ceaebed56326d32be0736a77e3b4d528af8003))
+
 ## [1.43.4](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.43.3...v1.43.4) (2025-08-07)
 
 
