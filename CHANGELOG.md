@@ -1,3 +1,10 @@
+## [1.44.1](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.44.0...v1.44.1) (2025-09-09)
+
+
+### Bug Fixes
+
+* Prevent dotenv from outputting to STDIO in MCP mode ([#106](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues/106)) ([52a8e13](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/52a8e132e35bc215445a15d846d5c79bf49a06fc))
+
 # [1.44.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.43.4...v1.44.0) (2025-09-09)
 
 
