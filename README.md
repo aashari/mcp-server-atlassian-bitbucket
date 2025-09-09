@@ -26,7 +26,24 @@ Get up and running in 2 minutes:
 
 ### 1. Get Your Bitbucket Credentials
 
-Generate a Bitbucket App Password:
+> ⚠️ **IMPORTANT**: Bitbucket App Passwords are being deprecated and will be removed by **June 2026**. We recommend using **Scoped API Tokens** for new setups.
+
+#### Option A: Scoped API Token (Recommended - Future-Proof)
+
+**Bitbucket is deprecating app passwords**. Use the new scoped API tokens instead:
+
+1. Go to [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Click **"Create API token with scopes"**
+3. Select **"Bitbucket"** as the product
+4. Choose the appropriate scopes:
+   - **For read-only access**: `repository`, `workspace`
+   - **For full functionality**: `repository`, `workspace`, `pullrequest`
+5. Copy the generated token (starts with `ATATT`)
+6. Use with your Atlassian email as the username
+
+#### Option B: App Password (Legacy - Will be deprecated)
+
+Generate a Bitbucket App Password (legacy method):
 1. Go to [Bitbucket App Passwords](https://bitbucket.org/account/settings/app-passwords/)
 2. Click "Create app password"
 3. Give it a name like "AI Assistant"
@@ -40,12 +57,11 @@ Generate a Bitbucket App Password:
 ```bash
 # Set your credentials (choose one method)
 
-# Method 1: Standard Atlassian credentials (recommended)
-export ATLASSIAN_SITE_NAME="your-company"  # for your-company.atlassian.net
+# Method 1: Scoped API Token (recommended - future-proof)
 export ATLASSIAN_USER_EMAIL="your.email@company.com"
-export ATLASSIAN_API_TOKEN="your_api_token"
+export ATLASSIAN_API_TOKEN="your_scoped_api_token"  # Token starting with ATATT
 
-# OR Method 2: Bitbucket-specific credentials
+# OR Method 2: Legacy App Password (will be deprecated June 2026)
 export ATLASSIAN_BITBUCKET_USERNAME="your_username"
 export ATLASSIAN_BITBUCKET_APP_PASSWORD="your_app_password"
 
@@ -65,7 +81,7 @@ npx -y @aashari/mcp-server-atlassian-bitbucket get-repo --workspace-slug your-wo
 
 Add this to your Claude configuration file (`~/.claude/claude_desktop_config.json`):
 
-**Option 1: Standard Atlassian credentials (recommended)**
+**Option 1: Scoped API Token (recommended - future-proof)**
 ```json
 {
   "mcpServers": {
@@ -73,16 +89,15 @@ Add this to your Claude configuration file (`~/.claude/claude_desktop_config.jso
       "command": "npx",
       "args": ["-y", "@aashari/mcp-server-atlassian-bitbucket"],
       "env": {
-        "ATLASSIAN_SITE_NAME": "your-company",
         "ATLASSIAN_USER_EMAIL": "your.email@company.com",
-        "ATLASSIAN_API_TOKEN": "your_api_token"
+        "ATLASSIAN_API_TOKEN": "your_scoped_api_token"
       }
     }
   }
 }
 ```
 
-**Option 2: Bitbucket-specific credentials**
+**Option 2: Legacy App Password (will be deprecated June 2026)**
 ```json
 {
   "mcpServers": {
@@ -114,21 +129,20 @@ Then configure your AI assistant to use the MCP server with STDIO transport.
 
 Create `~/.mcp/configs.json` for system-wide configuration:
 
-**Option 1: Standard Atlassian credentials (recommended)**
+**Option 1: Scoped API Token (recommended - future-proof)**
 ```json
 {
   "bitbucket": {
     "environments": {
-      "ATLASSIAN_SITE_NAME": "your-company",
       "ATLASSIAN_USER_EMAIL": "your.email@company.com",
-      "ATLASSIAN_API_TOKEN": "your_api_token",
+      "ATLASSIAN_API_TOKEN": "your_scoped_api_token",
       "BITBUCKET_DEFAULT_WORKSPACE": "your_main_workspace"
     }
   }
 }
 ```
 
-**Option 2: Bitbucket-specific credentials**
+**Option 2: Legacy App Password (will be deprecated June 2026)**
 ```json
 {
   "bitbucket": {
@@ -190,9 +204,20 @@ Ask your AI assistant:
    - Go to [Bitbucket App Passwords](https://bitbucket.org/account/settings/app-passwords/)
    - Make sure your app password has the right permissions (Workspaces: Read, Repositories: Read, Pull Requests: Read)
 
-3. **For Atlassian API Tokens** (if using Option 1):
+3. **For Scoped API Tokens** (recommended):
    - Go to [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
-   - Make sure your token is still active
+   - Make sure your token is still active and has the right scopes
+   - Update your `~/.mcp/configs.json` file to use the new scoped API token format:
+   ```json
+   {
+     "@aashari/mcp-server-atlassian-bitbucket": {
+       "environments": {
+         "ATLASSIAN_USER_EMAIL": "your.email@company.com",
+         "ATLASSIAN_API_TOKEN": "ATATT3xFfGF0..."
+       }
+     }
+   }
+   ```
 
 4. **Verify your credentials**:
    ```bash
@@ -239,11 +264,12 @@ If you're still having issues:
 
 ### What permissions do I need?
 
-**For Standard Atlassian credentials** (Option 1):
+**For Scoped API Tokens** (recommended):
 - Your regular Atlassian account with access to Bitbucket
-- API token with default permissions
+- Scoped API token created at [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
+- Required scopes: `repository`, `workspace` (add `pullrequest` for PR management)
 
-**For Bitbucket App Passwords** (Option 2):
+**For Bitbucket App Passwords** (legacy - being deprecated):
 - For **read-only access** (viewing repos, PRs, commits):
   - Workspaces: Read
   - Repositories: Read  
