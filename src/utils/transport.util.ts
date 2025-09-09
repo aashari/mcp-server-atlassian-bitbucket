@@ -100,13 +100,13 @@ export async function fetchAtlassian<T>(
 		'fetchAtlassian',
 	);
 
-	// Set up base URL and auth headers based on credential type
-	let baseUrl: string;
+	const baseUrl = 'https://api.bitbucket.org';
+
+	// Set up auth headers based on credential type
 	let authHeader: string;
 
 	if (credentials.useBitbucketAuth) {
-		// Bitbucket API uses a different base URL and auth format
-		baseUrl = 'https://api.bitbucket.org';
+		// Bitbucket API uses a different auth format
 		if (
 			!credentials.bitbucketUsername ||
 			!credentials.bitbucketAppPassword
@@ -120,14 +120,9 @@ export async function fetchAtlassian<T>(
 		).toString('base64')}`;
 	} else {
 		// Standard Atlassian API (Jira, Confluence)
-		if (
-			!credentials.siteName ||
-			!credentials.userEmail ||
-			!credentials.apiToken
-		) {
+		if (!credentials.userEmail || !credentials.apiToken) {
 			throw createAuthInvalidError('Missing Atlassian credentials');
 		}
-		baseUrl = `https://${credentials.siteName}.atlassian.net`;
 		authHeader = `Basic ${Buffer.from(
 			`${credentials.userEmail}:${credentials.apiToken}`,
 		).toString('base64')}`;
