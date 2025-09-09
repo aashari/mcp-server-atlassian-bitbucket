@@ -1,3 +1,10 @@
+## [1.44.2](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.44.1...v1.44.2) (2025-09-09)
+
+
+### Bug Fixes
+
+* use single baseUrl for API token authentication ([#117](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues/117)) ([a0d5ad1](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/a0d5ad1aa6333ab824f882de20af2e1f69540a55)), closes [#61](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues/61)
+
 ## [1.44.1](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.44.0...v1.44.1) (2025-09-09)
 
 
