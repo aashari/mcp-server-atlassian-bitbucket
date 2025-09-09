@@ -1,23 +1,24 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import { Logger } from '../utils/logger.util.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	ListPullRequestsToolArgs,
-	ListPullRequestsToolArgsType,
+	type ListPullRequestsToolArgsType,
 	GetPullRequestToolArgs,
-	GetPullRequestToolArgsType,
+	type GetPullRequestToolArgsType,
 	ListPullRequestCommentsToolArgs,
-	ListPullRequestCommentsToolArgsType,
+	type ListPullRequestCommentsToolArgsType,
 	CreatePullRequestCommentToolArgs,
-	CreatePullRequestCommentToolArgsType,
+	type CreatePullRequestCommentToolArgsType,
 	CreatePullRequestToolArgs,
-	CreatePullRequestToolArgsType,
+	type CreatePullRequestToolArgsType,
 	UpdatePullRequestToolArgs,
-	UpdatePullRequestToolArgsType,
+	type UpdatePullRequestToolArgsType,
 	ApprovePullRequestToolArgs,
-	ApprovePullRequestToolArgsType,
+	type ApprovePullRequestToolArgsType,
 	RejectPullRequestToolArgs,
-	RejectPullRequestToolArgsType,
+	type RejectPullRequestToolArgsType,
 } from './atlassian.pullrequests.types.js';
 import atlassianPullRequestsController from '../controllers/atlassian.pullrequests.controller.js';
 
@@ -37,7 +38,7 @@ toolLogger.debug('Bitbucket pull requests tool initialized');
  * @returns MCP response with formatted pull requests list
  * @throws Will return error message if pull request listing fails
  */
-async function listPullRequests(args: ListPullRequestsToolArgsType) {
+async function listPullRequests(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'listPullRequests',
@@ -46,7 +47,9 @@ async function listPullRequests(args: ListPullRequestsToolArgsType) {
 
 	try {
 		// Pass args directly to controller without any logic
-		const result = await atlassianPullRequestsController.list(args);
+		const result = await atlassianPullRequestsController.list(
+			args as ListPullRequestsToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved pull requests from controller',
@@ -76,7 +79,7 @@ async function listPullRequests(args: ListPullRequestsToolArgsType) {
  * @returns MCP response with formatted pull request details
  * @throws Will return error message if pull request retrieval fails
  */
-async function getPullRequest(args: GetPullRequestToolArgsType) {
+async function getPullRequest(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'getPullRequest',
@@ -85,7 +88,9 @@ async function getPullRequest(args: GetPullRequestToolArgsType) {
 
 	try {
 		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.get(args);
+		const result = await atlassianPullRequestsController.get(
+			args as GetPullRequestToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved pull request details from controller',
@@ -115,9 +120,7 @@ async function getPullRequest(args: GetPullRequestToolArgsType) {
  * @returns MCP response with formatted pull request comments
  * @throws Will return error message if comment retrieval fails
  */
-async function listPullRequestComments(
-	args: ListPullRequestCommentsToolArgsType,
-) {
+async function listPullRequestComments(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'listPullRequestComments',
@@ -126,7 +129,9 @@ async function listPullRequestComments(
 
 	try {
 		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.listComments(args);
+		const result = await atlassianPullRequestsController.listComments(
+			args as ListPullRequestCommentsToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved pull request comments from controller',
@@ -156,21 +161,23 @@ async function listPullRequestComments(
  * @returns MCP response with formatted success message
  * @throws Will return error message if comment creation fails
  */
-async function addPullRequestComment(
-	args: CreatePullRequestCommentToolArgsType,
-) {
+async function addPullRequestComment(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'addPullRequestComment',
 	);
 	methodLogger.debug('Adding pull request comment:', {
 		...args,
-		content: `(length: ${args.content.length})`,
+		content: args.content
+			? `(length: ${(args.content as string).length})`
+			: '(none)',
 	});
 
 	try {
 		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.addComment(args);
+		const result = await atlassianPullRequestsController.addComment(
+			args as CreatePullRequestCommentToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully added pull request comment via controller',
@@ -200,7 +207,7 @@ async function addPullRequestComment(
  * @returns MCP response with formatted pull request details
  * @throws Will return error message if pull request creation fails
  */
-async function addPullRequest(args: CreatePullRequestToolArgsType) {
+async function addPullRequest(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'addPullRequest',
@@ -208,13 +215,15 @@ async function addPullRequest(args: CreatePullRequestToolArgsType) {
 	methodLogger.debug('Creating new pull request:', {
 		...args,
 		description: args.description
-			? `(length: ${args.description.length})`
+			? `(length: ${(args.description as string).length})`
 			: '(none)',
 	});
 
 	try {
 		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.add(args);
+		const result = await atlassianPullRequestsController.add(
+			args as CreatePullRequestToolArgsType,
+		);
 
 		methodLogger.debug('Successfully created pull request via controller');
 
@@ -242,7 +251,7 @@ async function addPullRequest(args: CreatePullRequestToolArgsType) {
  * @returns MCP response with formatted updated pull request details
  * @throws Will return error message if pull request update fails
  */
-async function updatePullRequest(args: UpdatePullRequestToolArgsType) {
+async function updatePullRequest(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'updatePullRequest',
@@ -250,13 +259,15 @@ async function updatePullRequest(args: UpdatePullRequestToolArgsType) {
 	methodLogger.debug('Updating pull request:', {
 		...args,
 		description: args.description
-			? `(length: ${args.description.length})`
+			? `(length: ${(args.description as string).length})`
 			: '(unchanged)',
 	});
 
 	try {
 		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.update(args);
+		const result = await atlassianPullRequestsController.update(
+			args as UpdatePullRequestToolArgsType,
+		);
 
 		methodLogger.debug('Successfully updated pull request via controller');
 
@@ -284,7 +295,7 @@ async function updatePullRequest(args: UpdatePullRequestToolArgsType) {
  * @returns MCP response with formatted approval confirmation
  * @throws Will return error message if pull request approval fails
  */
-async function approvePullRequest(args: ApprovePullRequestToolArgsType) {
+async function approvePullRequest(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'approvePullRequest',
@@ -293,7 +304,9 @@ async function approvePullRequest(args: ApprovePullRequestToolArgsType) {
 
 	try {
 		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.approve(args);
+		const result = await atlassianPullRequestsController.approve(
+			args as ApprovePullRequestToolArgsType,
+		);
 
 		methodLogger.debug('Successfully approved pull request via controller');
 
@@ -321,7 +334,7 @@ async function approvePullRequest(args: ApprovePullRequestToolArgsType) {
  * @returns MCP response with formatted rejection confirmation
  * @throws Will return error message if pull request rejection fails
  */
-async function rejectPullRequest(args: RejectPullRequestToolArgsType) {
+async function rejectPullRequest(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.pullrequests.tool.ts',
 		'rejectPullRequest',
@@ -330,7 +343,9 @@ async function rejectPullRequest(args: RejectPullRequestToolArgsType) {
 
 	try {
 		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.reject(args);
+		const result = await atlassianPullRequestsController.reject(
+			args as RejectPullRequestToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully requested changes on pull request via controller',
@@ -398,19 +413,47 @@ function registerTools(server: McpServer) {
 	);
 
 	// Register the create pull request tool
+	// Note: Using prTitle instead of title to avoid MCP SDK conflict
+	const createPrSchema = z.object({
+		workspaceSlug: CreatePullRequestToolArgs.shape.workspaceSlug,
+		repoSlug: CreatePullRequestToolArgs.shape.repoSlug,
+		prTitle: CreatePullRequestToolArgs.shape.title, // Renamed from 'title' to 'prTitle'
+		sourceBranch: CreatePullRequestToolArgs.shape.sourceBranch,
+		destinationBranch: CreatePullRequestToolArgs.shape.destinationBranch,
+		description: CreatePullRequestToolArgs.shape.description,
+		closeSourceBranch: CreatePullRequestToolArgs.shape.closeSourceBranch,
+	});
 	server.tool(
 		'bb_add_pr',
-		`Creates a new pull request in a repository (\`repoSlug\`). If \`workspaceSlug\` is not provided, the system will use your default workspace. Required parameters include \`title\`, \`sourceBranch\` (branch with changes), and optionally \`destinationBranch\` (target branch, defaults to main/master). The \`description\` parameter accepts Markdown-formatted text for the PR description. Set \`closeSourceBranch\` to true to automatically delete the source branch after merging. Returns the newly created pull request details as formatted Markdown. Requires Bitbucket credentials with write permissions to be configured.`,
-		CreatePullRequestToolArgs.shape,
-		addPullRequest,
+		`Creates a new pull request in a repository (\`repoSlug\`). If \`workspaceSlug\` is not provided, the system will use your default workspace. Required parameters include \`prTitle\` (the PR title), \`sourceBranch\` (branch with changes), and optionally \`destinationBranch\` (target branch, defaults to main/master). The \`description\` parameter accepts Markdown-formatted text for the PR description. Set \`closeSourceBranch\` to true to automatically delete the source branch after merging. Returns the newly created pull request details as formatted Markdown. Requires Bitbucket credentials with write permissions to be configured.`,
+		createPrSchema.shape,
+		async (args: Record<string, unknown>) => {
+			// Map prTitle back to title for the controller
+			const mappedArgs = { ...args, title: args.prTitle };
+			delete (mappedArgs as Record<string, unknown>).prTitle;
+			return addPullRequest(mappedArgs);
+		},
 	);
 
 	// Register the update pull request tool
+	// Note: Using prTitle instead of title to avoid MCP SDK conflict
+	const updatePrSchema = z.object({
+		workspaceSlug: UpdatePullRequestToolArgs.shape.workspaceSlug,
+		repoSlug: UpdatePullRequestToolArgs.shape.repoSlug,
+		pullRequestId: UpdatePullRequestToolArgs.shape.pullRequestId,
+		prTitle: UpdatePullRequestToolArgs.shape.title, // Renamed from 'title' to 'prTitle'
+		description: UpdatePullRequestToolArgs.shape.description,
+	});
 	server.tool(
 		'bb_update_pr',
-		`Updates an existing pull request in a repository (\`repoSlug\`) identified by \`pullRequestId\`. If \`workspaceSlug\` is not provided, the system will use your default workspace. You can update the \`title\` and/or \`description\` fields. At least one field must be provided. The \`description\` parameter accepts Markdown-formatted text. Returns the updated pull request details as formatted Markdown. Requires Bitbucket credentials with write permissions to be configured.`,
-		UpdatePullRequestToolArgs.shape,
-		updatePullRequest,
+		`Updates an existing pull request in a repository (\`repoSlug\`) identified by \`pullRequestId\`. If \`workspaceSlug\` is not provided, the system will use your default workspace. You can update the \`prTitle\` (the PR title) and/or \`description\` fields. At least one field must be provided. The \`description\` parameter accepts Markdown-formatted text. Returns the updated pull request details as formatted Markdown. Requires Bitbucket credentials with write permissions to be configured.`,
+		updatePrSchema.shape,
+		async (args: Record<string, unknown>) => {
+			// Map prTitle back to title for the controller
+			const mappedArgs = { ...args, title: args.prTitle };
+			delete (mappedArgs as Record<string, unknown>).prTitle;
+			return updatePullRequest(mappedArgs);
+		},
 	);
 
 	// Register the approve pull request tool

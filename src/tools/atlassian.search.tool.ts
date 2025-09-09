@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Logger } from '../utils/logger.util.js';
 import {
 	SearchToolArgsSchema,
-	SearchToolArgsType,
+	type SearchToolArgsType,
 } from './atlassian.search.types.js';
 import atlassianSearchController from '../controllers/atlassian.search.controller.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
@@ -14,7 +14,7 @@ const logger = Logger.forContext('tools/atlassian.search.tool.ts');
 /**
  * Handle search command in MCP
  */
-async function handleSearch(args: SearchToolArgsType) {
+async function handleSearch(args: Record<string, unknown>) {
 	// Create a method-scoped logger
 	const methodLogger = logger.forMethod('handleSearch');
 
@@ -39,22 +39,42 @@ async function handleSearch(args: SearchToolArgsType) {
 			methodLogger.debug(`Using default workspace: ${workspace}`);
 		}
 
-		// Map tool args to controller options, aligning with controller parameter names
-		const controllerOptions = {
-			workspace: workspace,
-			repo: args.repoSlug,
-			query: args.query,
-			type: args.scope,
-			contentType: args.contentType,
-			language: args.language,
-			extension: args.extension,
-			limit: args.limit,
-			cursor: args.cursor,
+		// Pass args to controller with workspace added
+		const searchArgs: SearchToolArgsType = {
+			workspaceSlug: workspace as string,
+			repoSlug: args.repoSlug as string | undefined,
+			query: args.query as string,
+			scope:
+				(args.scope as
+					| 'code'
+					| 'content'
+					| 'repositories'
+					| 'pullrequests') || 'code',
+			contentType: args.contentType as string | undefined,
+			language: args.language as string | undefined,
+			extension: args.extension as string | undefined,
+			limit: args.limit as number | undefined,
+			cursor: args.cursor as string | undefined,
 		};
 
-		// Call the controller
-		const result =
-			await atlassianSearchController.search(controllerOptions);
+		// Call the controller with proper parameter mapping
+		const controllerOptions = {
+			workspace: searchArgs.workspaceSlug,
+			repo: searchArgs.repoSlug,
+			query: searchArgs.query,
+			type: searchArgs.scope,
+			contentType: searchArgs.contentType,
+			language: searchArgs.language,
+			extension: searchArgs.extension,
+			limit: searchArgs.limit,
+			cursor: searchArgs.cursor,
+		};
+
+		const result = await atlassianSearchController.search(
+			controllerOptions as Parameters<
+				typeof atlassianSearchController.search
+			>[0],
+		);
 
 		// Return the result content in MCP format
 		return {

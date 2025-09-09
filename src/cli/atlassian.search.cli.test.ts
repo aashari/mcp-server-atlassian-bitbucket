@@ -26,8 +26,7 @@ describe('Atlassian Search CLI Commands', () => {
 	describe('search command', () => {
 		it('should search repositories and return success exit code', async () => {
 			if (skipIfNoCredentials()) {
-				console.warn('Skipping search test - no credentials');
-				return;
+				return; // Skip silently - no credentials available
 			}
 
 			const { stdout, exitCode } = await CliTestUtil.runCommand([
@@ -43,8 +42,7 @@ describe('Atlassian Search CLI Commands', () => {
 
 		it('should support searching with query parameter', async () => {
 			if (skipIfNoCredentials()) {
-				console.warn('Skipping query test - no credentials');
-				return;
+				return; // Skip silently - no credentials available
 			}
 
 			const { stdout, exitCode } = await CliTestUtil.runCommand([
@@ -60,8 +58,7 @@ describe('Atlassian Search CLI Commands', () => {
 
 		it('should support pagination with limit flag', async () => {
 			if (skipIfNoCredentials()) {
-				console.warn('Skipping pagination test - no credentials');
-				return;
+				return; // Skip silently - no credentials available
 			}
 
 			const { stdout, exitCode } = await CliTestUtil.runCommand([
@@ -94,8 +91,7 @@ describe('Atlassian Search CLI Commands', () => {
 
 		it('should handle invalid limit value gracefully', async () => {
 			if (skipIfNoCredentials()) {
-				console.warn('Skipping invalid limit test - no credentials');
-				return;
+				return; // Skip silently - no credentials available
 			}
 
 			const { stdout, exitCode } = await CliTestUtil.runCommand([

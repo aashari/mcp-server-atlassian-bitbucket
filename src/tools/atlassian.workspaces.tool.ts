@@ -3,8 +3,8 @@ import { Logger } from '../utils/logger.util.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	ListWorkspacesToolArgs,
-	ListWorkspacesToolArgsType,
-	GetWorkspaceToolArgsType,
+	type ListWorkspacesToolArgsType,
+	type GetWorkspaceToolArgsType,
 	GetWorkspaceToolArgs,
 } from './atlassian.workspaces.types.js';
 
@@ -26,7 +26,7 @@ toolLogger.debug('Bitbucket workspaces tool initialized');
  * @returns MCP response with formatted workspaces list
  * @throws Will return error message if workspace listing fails
  */
-async function listWorkspaces(args: ListWorkspacesToolArgsType) {
+async function listWorkspaces(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.workspaces.tool.ts',
 		'listWorkspaces',
@@ -35,7 +35,9 @@ async function listWorkspaces(args: ListWorkspacesToolArgsType) {
 
 	try {
 		// Pass args directly to controller without any logic
-		const result = await atlassianWorkspacesController.list(args);
+		const result = await atlassianWorkspacesController.list(
+			args as ListWorkspacesToolArgsType,
+		);
 
 		methodLogger.debug('Successfully retrieved workspaces from controller');
 
@@ -63,7 +65,7 @@ async function listWorkspaces(args: ListWorkspacesToolArgsType) {
  * @returns MCP response with formatted workspace details
  * @throws Will return error message if workspace retrieval fails
  */
-async function getWorkspace(args: GetWorkspaceToolArgsType) {
+async function getWorkspace(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.workspaces.tool.ts',
 		'getWorkspace',
@@ -72,7 +74,9 @@ async function getWorkspace(args: GetWorkspaceToolArgsType) {
 
 	try {
 		// Pass args directly to controller without any logic
-		const result = await atlassianWorkspacesController.get(args);
+		const result = await atlassianWorkspacesController.get(
+			args as GetWorkspaceToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved workspace details from controller',

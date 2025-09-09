@@ -20,13 +20,15 @@ toolLogger.debug('Bitbucket diff tool initialized');
  * @param args - Arguments for the branch diff operation
  * @returns MCP tool response
  */
-async function branchDiff(args: BranchDiffArgsType) {
+async function branchDiff(args: Record<string, unknown>) {
 	const methodLogger = toolLogger.forMethod('branchDiff');
 	try {
 		methodLogger.debug('Processing branch diff tool request', args);
 
 		// Pass args directly to controller without any business logic
-		const result = await diffController.branchDiff(args);
+		const result = await diffController.branchDiff(
+			args as BranchDiffArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved branch diff from controller',
@@ -51,13 +53,15 @@ async function branchDiff(args: BranchDiffArgsType) {
  * @param args - Arguments for the commit diff operation
  * @returns MCP tool response
  */
-async function commitDiff(args: CommitDiffArgsType) {
+async function commitDiff(args: Record<string, unknown>) {
 	const methodLogger = toolLogger.forMethod('commitDiff');
 	try {
 		methodLogger.debug('Processing commit diff tool request', args);
 
 		// Pass args directly to controller without any business logic
-		const result = await diffController.commitDiff(args);
+		const result = await diffController.commitDiff(
+			args as CommitDiffArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved commit diff from controller',

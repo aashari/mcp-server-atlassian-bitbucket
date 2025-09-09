@@ -40,8 +40,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 		if (
 			workspacesResult.stdout.includes('No Bitbucket workspaces found.')
 		) {
-			console.warn('Skipping test: No workspaces available');
-			return null;
+			return null; // Skip silently for this helper function
 		}
 
 		// Extract a workspace slug from the output
@@ -49,8 +48,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 			/\*\*Slug\*\*:\s+([^\n]+)/,
 		);
 		if (!slugMatch || !slugMatch[1]) {
-			console.warn('Skipping test: Could not extract workspace slug');
-			return null;
+			return null; // Skip silently for this helper function
 		}
 
 		const workspaceSlug = slugMatch[1].trim();
@@ -64,15 +62,13 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 
 		// Skip if no repositories are available
 		if (reposResult.stdout.includes('No repositories found')) {
-			console.warn('Skipping test: No repositories available');
-			return null;
+			return null; // Skip silently for this helper function
 		}
 
 		// Extract a repository slug from the output
 		const repoMatch = reposResult.stdout.match(/\*\*Name\*\*:\s+([^\n]+)/);
 		if (!repoMatch || !repoMatch[1]) {
-			console.warn('Skipping test: Could not extract repository slug');
-			return null;
+			return null; // Skip silently for this helper function
 		}
 
 		const repoSlug = repoMatch[1].trim();
@@ -239,8 +235,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 
 			// Skip if no pull requests are available
 			if (listResult.stdout.includes('No pull requests found')) {
-				console.warn('Skipping test: No pull requests available');
-				return;
+				return; // Skip silently - no pull requests available
 			}
 
 			// Extract a pull request ID from the output
@@ -273,7 +268,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 				expect(getResult).toBeDefined();
 			} else {
 				// Skip test if no PR ID found
-				console.warn('Skipping test: No pull request ID available');
+				return; // Skip silently - no pull request ID available
 			}
 		}, 45000); // Increased timeout for multiple API calls
 
@@ -347,8 +342,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 
 			// Skip if no pull requests are available
 			if (listResult.stdout.includes('No pull requests found')) {
-				console.warn('Skipping test: No pull requests available');
-				return;
+				return; // Skip silently - no pull requests available
 			}
 
 			// Extract a pull request ID from the output
@@ -381,7 +375,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 				expect(result).toBeDefined();
 			} else {
 				// Skip test if no PR ID found
-				console.warn('Skipping test: No pull request ID available');
+				return; // Skip silently - no pull request ID available
 			}
 		}, 45000); // Increased timeout for multiple API calls
 
@@ -455,8 +449,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 
 			// Skip if no pull requests are available
 			if (listResult.stdout.includes('No pull requests found')) {
-				console.warn('Skipping test: No pull requests available');
-				return;
+				return; // Skip silently - no pull requests available
 			}
 
 			// Extract a pull request ID from the output
@@ -491,7 +484,7 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 				expect(limitResult).toBeDefined();
 			} else {
 				// Skip test if no PR ID found
-				console.warn('Skipping test: No pull request ID available');
+				return; // Skip silently - no pull request ID available
 			}
 		}, 45000); // Increased timeout for multiple API calls
 	});

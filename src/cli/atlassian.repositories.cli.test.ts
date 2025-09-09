@@ -37,8 +37,7 @@ describe('Atlassian Repositories CLI Commands', () => {
 		if (
 			workspacesResult.stdout.includes('No Bitbucket workspaces found.')
 		) {
-			console.warn('Skipping test: No workspaces available');
-			return null;
+			return null; // Skip silently for this helper function
 		}
 
 		// Extract a workspace slug from the output
@@ -46,8 +45,7 @@ describe('Atlassian Repositories CLI Commands', () => {
 			/\*\*Slug\*\*:\s+([^\n]+)/,
 		);
 		if (!slugMatch || !slugMatch[1]) {
-			console.warn('Skipping test: Could not extract workspace slug');
-			return null;
+			return null; // Skip silently for this helper function
 		}
 
 		return slugMatch[1].trim();
@@ -307,8 +305,7 @@ describe('Atlassian Repositories CLI Commands', () => {
 
 			// Skip if no repositories are available
 			if (reposResult.stdout.includes('No repositories found')) {
-				console.warn('Skipping test: No repositories available');
-				return null;
+				return null; // Skip silently for this helper function
 			}
 
 			// Extract a repository slug from the output
