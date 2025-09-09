@@ -45,7 +45,7 @@ export async function getDiffstat(
 	} catch (err) {
 		if (err instanceof z.ZodError) {
 			throw createApiError(
-				`Invalid parameters: ${err.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${err.issues.map((e) => e.message).join(', ')}`,
 				400,
 				err,
 			);
@@ -109,7 +109,7 @@ export async function getRawDiff(params: GetRawDiffParams): Promise<string> {
 	} catch (err) {
 		if (err instanceof z.ZodError) {
 			throw createApiError(
-				`Invalid parameters: ${err.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${err.issues.map((e) => e.message).join(', ')}`,
 				400,
 				err,
 			);

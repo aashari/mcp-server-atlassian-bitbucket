@@ -3,19 +3,19 @@ import { Logger } from '../utils/logger.util.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	ListRepositoriesToolArgs,
-	ListRepositoriesToolArgsType,
+	type ListRepositoriesToolArgsType,
 	GetRepositoryToolArgs,
-	GetRepositoryToolArgsType,
+	type GetRepositoryToolArgsType,
 	GetCommitHistoryToolArgs,
-	GetCommitHistoryToolArgsType,
+	type GetCommitHistoryToolArgsType,
 	CreateBranchToolArgsSchema,
-	CreateBranchToolArgsType,
+	type CreateBranchToolArgsType,
 	CloneRepositoryToolArgs,
-	CloneRepositoryToolArgsType,
+	type CloneRepositoryToolArgsType,
 	GetFileContentToolArgs,
-	GetFileContentToolArgsType,
+	type GetFileContentToolArgsType,
 	ListBranchesToolArgs,
-	ListBranchesToolArgsType,
+	type ListBranchesToolArgsType,
 } from './atlassian.repositories.types.js';
 
 // Import directly from specialized controllers
@@ -47,7 +47,7 @@ toolLogger.debug('Bitbucket repositories tool initialized');
  * @returns MCP response with formatted repositories list
  * @throws Will return error message if repository listing fails
  */
-async function listRepositories(args: ListRepositoriesToolArgsType) {
+async function listRepositories(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.repositories.tool.ts',
 		'listRepositories',
@@ -56,7 +56,9 @@ async function listRepositories(args: ListRepositoriesToolArgsType) {
 
 	try {
 		// Pass args directly to controller without any logic
-		const result = await handleRepositoriesList(args);
+		const result = await handleRepositoriesList(
+			args as ListRepositoriesToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved repositories from controller',
@@ -86,7 +88,7 @@ async function listRepositories(args: ListRepositoriesToolArgsType) {
  * @returns MCP response with formatted repository details
  * @throws Will return error message if repository retrieval fails
  */
-async function getRepository(args: GetRepositoryToolArgsType) {
+async function getRepository(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.repositories.tool.ts',
 		'getRepository',
@@ -95,7 +97,9 @@ async function getRepository(args: GetRepositoryToolArgsType) {
 
 	try {
 		// Pass args directly to controller
-		const result = await handleRepositoryDetails(args);
+		const result = await handleRepositoryDetails(
+			args as GetRepositoryToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved repository details from controller',
@@ -124,7 +128,7 @@ async function getRepository(args: GetRepositoryToolArgsType) {
  * @returns MCP response with formatted commit history.
  * @throws Will return error message if history retrieval fails.
  */
-async function handleGetCommitHistory(args: GetCommitHistoryToolArgsType) {
+async function handleGetCommitHistory(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.repositories.tool.ts',
 		'handleGetCommitHistory',
@@ -133,7 +137,9 @@ async function handleGetCommitHistory(args: GetCommitHistoryToolArgsType) {
 
 	try {
 		// Pass args directly to controller
-		const result = await handleCommitHistory(args);
+		const result = await handleCommitHistory(
+			args as GetCommitHistoryToolArgsType,
+		);
 
 		methodLogger.debug(
 			'Successfully retrieved commit history from controller',
@@ -151,7 +157,7 @@ async function handleGetCommitHistory(args: GetCommitHistoryToolArgsType) {
 /**
  * Handler for adding a new branch.
  */
-async function handleAddBranch(args: CreateBranchToolArgsType) {
+async function handleAddBranch(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.repositories.tool.ts',
 		'handleAddBranch',
@@ -160,7 +166,9 @@ async function handleAddBranch(args: CreateBranchToolArgsType) {
 		methodLogger.debug('Creating new branch:', args);
 
 		// Pass args directly to controller
-		const result = await handleCreateBranch(args);
+		const result = await handleCreateBranch(
+			args as CreateBranchToolArgsType,
+		);
 
 		methodLogger.debug('Successfully created branch via controller');
 
@@ -176,7 +184,7 @@ async function handleAddBranch(args: CreateBranchToolArgsType) {
 /**
  * Handler for cloning a repository.
  */
-async function handleRepoClone(args: CloneRepositoryToolArgsType) {
+async function handleRepoClone(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.repositories.tool.ts',
 		'handleRepoClone',
@@ -185,7 +193,9 @@ async function handleRepoClone(args: CloneRepositoryToolArgsType) {
 		methodLogger.debug('Cloning repository:', args);
 
 		// Pass args directly to controller
-		const result = await handleCloneRepository(args);
+		const result = await handleCloneRepository(
+			args as CloneRepositoryToolArgsType,
+		);
 
 		methodLogger.debug('Successfully cloned repository via controller');
 
@@ -201,17 +211,18 @@ async function handleRepoClone(args: CloneRepositoryToolArgsType) {
 /**
  * Handler for getting file content.
  */
-async function getFileContent(args: GetFileContentToolArgsType) {
+async function getFileContent(args: Record<string, unknown>) {
 	const methodLogger = toolLogger.forMethod('getFileContent');
 	try {
 		methodLogger.debug('Getting file content:', args);
 
-		// Pass args directly to controller without any transformation
+		// Map tool args to controller args
+		const typedArgs = args as GetFileContentToolArgsType;
 		const result = await handleGetFileContent({
-			workspaceSlug: args.workspaceSlug,
-			repoSlug: args.repoSlug,
-			path: args.filePath,
-			ref: args.revision,
+			workspaceSlug: typedArgs.workspaceSlug,
+			repoSlug: typedArgs.repoSlug,
+			path: typedArgs.filePath,
+			ref: typedArgs.revision,
 		});
 
 		methodLogger.debug(
@@ -237,7 +248,7 @@ async function getFileContent(args: GetFileContentToolArgsType) {
  * @returns MCP response with formatted branches list
  * @throws Will return error message if branch listing fails
  */
-async function listBranches(args: ListBranchesToolArgsType) {
+async function listBranches(args: Record<string, unknown>) {
 	const methodLogger = Logger.forContext(
 		'tools/atlassian.repositories.tool.ts',
 		'listBranches',
@@ -246,7 +257,9 @@ async function listBranches(args: ListBranchesToolArgsType) {
 
 	try {
 		// Pass args directly to controller
-		const result = await handleListBranches(args);
+		const result = await handleListBranches(
+			args as ListBranchesToolArgsType,
+		);
 
 		methodLogger.debug('Successfully retrieved branches from controller');
 

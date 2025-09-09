@@ -92,7 +92,7 @@ async function list(
 				error.format(),
 			);
 			throw createApiError(
-				`Invalid parameters: ${error.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${error.issues.map((e) => e.message).join(', ')}`,
 				400,
 				error,
 			);
@@ -203,7 +203,7 @@ async function get(params: GetRepositoryParams): Promise<Repository> {
 				error.format(),
 			);
 			throw createApiError(
-				`Invalid parameters: ${error.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${error.issues.map((e) => e.message).join(', ')}`,
 				400,
 				error,
 			);
@@ -289,7 +289,7 @@ async function listCommits(
 				error.format(),
 			);
 			throw createApiError(
-				`Invalid parameters: ${error.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${error.issues.map((e) => e.message).join(', ')}`,
 				400,
 				error,
 			);
@@ -382,7 +382,7 @@ async function createBranch(params: CreateBranchParams): Promise<BranchRef> {
 		if (error instanceof z.ZodError) {
 			methodLogger.error('Invalid parameters provided:', error.format());
 			throw createApiError(
-				`Invalid parameters: ${error.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${error.issues.map((e) => e.message).join(', ')}`,
 				400,
 				error,
 			);
@@ -484,7 +484,7 @@ async function getFileContent(params: GetFileContentParams): Promise<string> {
 				error.format(),
 			);
 			throw createApiError(
-				`Invalid parameters: ${error.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${error.issues.map((e) => e.message).join(', ')}`,
 				400,
 				error,
 			);
@@ -562,7 +562,7 @@ async function listBranches(
 				error.format(),
 			);
 			throw createApiError(
-				`Invalid parameters: ${error.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters: ${error.issues.map((e) => e.message).join(', ')}`,
 				400,
 				error,
 			);

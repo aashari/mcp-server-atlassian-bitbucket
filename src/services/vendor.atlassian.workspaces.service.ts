@@ -80,7 +80,7 @@ async function list(
 				error.format(),
 			);
 			throw createApiError(
-				`Invalid parameters for listing workspaces: ${error.errors.map((e) => e.message).join(', ')}`,
+				`Invalid parameters for listing workspaces: ${error.issues.map((e) => e.message).join(', ')}`,
 				400,
 				error,
 			);
