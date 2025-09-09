@@ -40,14 +40,13 @@ describe('Transport Utility', () => {
 				expect(credentials.useBitbucketAuth).toBe(true);
 			} else {
 				// Verify the standard Atlassian credentials
-				expect(credentials).toHaveProperty('siteName');
 				expect(credentials).toHaveProperty('userEmail');
 				expect(credentials).toHaveProperty('apiToken');
 
 				// Verify the credentials are not empty
-				expect(credentials.siteName).toBeTruthy();
 				expect(credentials.userEmail).toBeTruthy();
 				expect(credentials.apiToken).toBeTruthy();
+				// Note: siteName is optional for API tokens
 			}
 		});
 
