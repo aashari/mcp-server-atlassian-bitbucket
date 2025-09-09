@@ -81,8 +81,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			const result = await atlassianSearchController.search({
@@ -105,8 +104,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			const result = await atlassianSearchController.search({
@@ -129,8 +127,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			const result = await atlassianSearchController.search({
@@ -154,8 +151,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			// Use a query that might match something (repository name itself often works)
@@ -183,8 +179,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			// Fetch first page with limit 1
@@ -250,8 +245,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			// Should not throw an error when repo is missing but type is repositories
@@ -271,8 +265,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			// When searching pull requests without a repo, should return an error message
@@ -293,8 +286,7 @@ describe('Atlassian Search Controller', () => {
 
 			const repoInfo = await getRepositoryInfo();
 			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
+				return; // Skip silently - no repository info available for testing
 			}
 
 			// Use a query string that will definitely not match anything

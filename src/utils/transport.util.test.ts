@@ -24,10 +24,7 @@ describe('Transport Utility', () => {
 			// This test will be skipped if credentials are not available
 			const credentials = getAtlassianCredentials();
 			if (!credentials) {
-				console.warn(
-					'Skipping test: No Atlassian credentials available',
-				);
-				return;
+				return; // Skip silently - no credentials available for testing
 			}
 
 			// Check if the credentials are for standard Atlassian or Bitbucket-specific
@@ -87,10 +84,7 @@ describe('Transport Utility', () => {
 			// This test will be skipped if credentials are not available
 			const credentials = getAtlassianCredentials();
 			if (!credentials) {
-				console.warn(
-					'Skipping test: No Atlassian credentials available',
-				);
-				return;
+				return; // Skip silently - no credentials available for testing
 			}
 
 			// Make a call to a real API endpoint
@@ -123,10 +117,7 @@ describe('Transport Utility', () => {
 			// This test will be skipped if credentials are not available
 			const credentials = getAtlassianCredentials();
 			if (!credentials) {
-				console.warn(
-					'Skipping test: No Atlassian credentials available',
-				);
-				return;
+				return; // Skip silently - no credentials available for testing
 			}
 
 			// Call a non-existent endpoint and expect it to throw
@@ -139,10 +130,7 @@ describe('Transport Utility', () => {
 			// This test will be skipped if credentials are not available
 			const credentials = getAtlassianCredentials();
 			if (!credentials) {
-				console.warn(
-					'Skipping test: No Atlassian credentials available',
-				);
-				return;
+				return; // Skip silently - no credentials available for testing
 			}
 
 			// Call the function with a path that doesn't start with a slash
@@ -163,10 +151,7 @@ describe('Transport Utility', () => {
 			// This test will be skipped if credentials are not available
 			const credentials = getAtlassianCredentials();
 			if (!credentials) {
-				console.warn(
-					'Skipping test: No Atlassian credentials available',
-				);
-				return;
+				return; // Skip silently - no credentials available for testing
 			}
 
 			// Custom request options with pagination

@@ -100,7 +100,7 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "turndown": "^7.2.1",
-    "zod": "^4.1.5"
+    "zod": "^3.25.76"
   },
   "directories": {
     "example": "examples"
@@ -108,6 +108,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
     "testMatch": [
       "**/src/**/*.test.ts"
     ],
