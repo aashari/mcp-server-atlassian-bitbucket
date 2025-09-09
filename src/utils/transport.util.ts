@@ -53,7 +53,7 @@ export function getAtlassianCredentials(): AtlassianCredentials | null {
 	const apiToken = config.get('ATLASSIAN_API_TOKEN');
 
 	// If standard credentials are available, use them
-	if (siteName && userEmail && apiToken) {
+	if (userEmail && apiToken) {
 		methodLogger.debug('Using standard Atlassian credentials');
 		return {
 			siteName,
