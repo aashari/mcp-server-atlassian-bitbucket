@@ -1,4 +1,5 @@
 import { Logger } from './logger.util.js';
+import { DATA_LIMITS } from './constants.util.js';
 import { ResponsePagination } from '../types/common.types.js';
 
 /**
@@ -166,4 +167,79 @@ export function extractPaginationInfo<T extends Partial<PaginationData>>(
 	}
 
 	return pagination;
+}
+
+/**
+ * Validates and enforces page size limits to prevent excessive data exposure (CWE-770)
+ * @param requestedPageSize The requested page size from the client
+ * @param contextInfo Optional context for logging (e.g., endpoint name)
+ * @returns The validated page size (clamped to maximum allowed)
+ */
+export function validatePageSize(
+	requestedPageSize?: number,
+	contextInfo?: string,
+): number {
+	const methodLogger = Logger.forContext(
+		'utils/pagination.util.ts',
+		'validatePageSize',
+	);
+
+	// Use default if not specified
+	if (!requestedPageSize || requestedPageSize <= 0) {
+		const defaultSize = DATA_LIMITS.DEFAULT_PAGE_SIZE;
+		methodLogger.debug(
+			`Using default page size: ${defaultSize}${contextInfo ? ` for ${contextInfo}` : ''}`,
+		);
+		return defaultSize;
+	}
+
+	// Enforce maximum page size limit
+	if (requestedPageSize > DATA_LIMITS.MAX_PAGE_SIZE) {
+		const clampedSize = DATA_LIMITS.MAX_PAGE_SIZE;
+		methodLogger.warn(
+			`Page size ${requestedPageSize} exceeds maximum limit. Clamped to ${clampedSize}${contextInfo ? ` for ${contextInfo}` : ''}`,
+		);
+		return clampedSize;
+	}
+
+	methodLogger.debug(
+		`Using requested page size: ${requestedPageSize}${contextInfo ? ` for ${contextInfo}` : ''}`,
+	);
+	return requestedPageSize;
+}
+
+/**
+ * Validates pagination data to ensure it doesn't exceed configured limits
+ * @param paginationData The pagination data to validate
+ * @param contextInfo Optional context for logging
+ * @returns True if data is within limits, false otherwise
+ */
+export function validatePaginationLimits(
+	paginationData: { count?: number; size?: number; pagelen?: number },
+	contextInfo?: string,
+): boolean {
+	const methodLogger = Logger.forContext(
+		'utils/pagination.util.ts',
+		'validatePaginationLimits',
+	);
+
+	// Check if the response contains more items than our maximum allowed
+	const itemCount = paginationData.count ?? 0;
+	const pageSize = paginationData.size ?? paginationData.pagelen ?? 0;
+
+	if (itemCount > DATA_LIMITS.MAX_PAGE_SIZE) {
+		methodLogger.warn(
+			`Response contains ${itemCount} items, exceeding maximum of ${DATA_LIMITS.MAX_PAGE_SIZE}${contextInfo ? ` for ${contextInfo}` : ''}`,
+		);
+		return false;
+	}
+
+	if (pageSize > DATA_LIMITS.MAX_PAGE_SIZE) {
+		methodLogger.warn(
+			`Response page size ${pageSize} exceeds maximum of ${DATA_LIMITS.MAX_PAGE_SIZE}${contextInfo ? ` for ${contextInfo}` : ''}`,
+		);
+		return false;
+	}
+
+	return true;
 }

@@ -1,6 +1,6 @@
 import { Logger } from './logger.util.js';
 import { config } from './config.util.js';
-import { NETWORK_TIMEOUTS } from './constants.util.js';
+import { NETWORK_TIMEOUTS, DATA_LIMITS } from './constants.util.js';
 import {
 	createAuthInvalidError,
 	createApiError,
@@ -182,6 +182,22 @@ export async function fetchAtlassian<T>(
 				headers: Object.fromEntries(response.headers.entries()),
 			},
 		);
+
+		// Validate response size to prevent excessive memory usage (CWE-770)
+		const contentLength = response.headers.get('content-length');
+		if (contentLength) {
+			const responseSize = parseInt(contentLength, 10);
+			if (responseSize > DATA_LIMITS.MAX_RESPONSE_SIZE) {
+				methodLogger.warn(
+					`Response size ${responseSize} bytes exceeds limit of ${DATA_LIMITS.MAX_RESPONSE_SIZE} bytes`,
+				);
+				throw createApiError(
+					`Response size (${Math.round(responseSize / (1024 * 1024))}MB) exceeds maximum limit of ${Math.round(DATA_LIMITS.MAX_RESPONSE_SIZE / (1024 * 1024))}MB`,
+					413,
+					{ responseSize, limit: DATA_LIMITS.MAX_RESPONSE_SIZE },
+				);
+			}
+		}
 
 		if (!response.ok) {
 			const errorText = await response.text();

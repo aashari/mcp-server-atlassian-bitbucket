@@ -36,3 +36,17 @@ export const NETWORK_TIMEOUTS = {
 	/** Timeout for search operations (45 seconds) */
 	SEARCH_REQUEST_TIMEOUT: 45 * 1000,
 } as const;
+
+/**
+ * Data limits to prevent excessive resource consumption (CWE-770)
+ */
+export const DATA_LIMITS = {
+	/** Maximum response size in bytes (10MB) */
+	MAX_RESPONSE_SIZE: 10 * 1024 * 1024,
+
+	/** Maximum items per page for paginated requests */
+	MAX_PAGE_SIZE: 100,
+
+	/** Default page size when not specified */
+	DEFAULT_PAGE_SIZE: 50,
+} as const;
