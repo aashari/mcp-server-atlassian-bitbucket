@@ -1,5 +1,6 @@
 import { Logger } from './logger.util.js';
 import { config } from './config.util.js';
+import { NETWORK_TIMEOUTS } from './constants.util.js';
 import {
 	createAuthInvalidError,
 	createApiError,
@@ -29,6 +30,7 @@ export interface RequestOptions {
 	method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
 	headers?: Record<string, string>;
 	body?: unknown;
+	timeout?: number;
 }
 
 // Create a contextualized logger for this file
@@ -151,8 +153,24 @@ export async function fetchAtlassian<T>(
 
 	methodLogger.debug(`Calling Atlassian API: ${url}`);
 
+	// Set up timeout handling with configurable values
+	const defaultTimeout = config.getNumber(
+		'ATLASSIAN_REQUEST_TIMEOUT',
+		NETWORK_TIMEOUTS.DEFAULT_REQUEST_TIMEOUT,
+	);
+	const timeoutMs = options.timeout ?? defaultTimeout;
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => {
+		methodLogger.warn(`Request timeout after ${timeoutMs}ms: ${url}`);
+		controller.abort();
+	}, timeoutMs);
+
+	// Add abort signal to request options
+	requestOptions.signal = controller.signal;
+
 	try {
 		const response = await fetch(url, requestOptions);
+		clearTimeout(timeoutId);
 
 		// Log the raw response status and headers
 		methodLogger.debug(
@@ -304,11 +322,24 @@ export async function fetchAtlassian<T>(
 
 		return response.json() as Promise<T>;
 	} catch (error) {
+		clearTimeout(timeoutId);
 		methodLogger.error(`Request failed`, error);
 
 		// If it's already an McpError, just rethrow it
 		if (error instanceof McpError) {
 			throw error;
+		}
+
+		// Handle timeout errors
+		if (error instanceof Error && error.name === 'AbortError') {
+			methodLogger.error(
+				`Request timed out after ${timeoutMs}ms: ${url}`,
+			);
+			throw createApiError(
+				`Request timeout: Bitbucket API did not respond within ${timeoutMs / 1000} seconds`,
+				408,
+				error,
+			);
 		}
 
 		// Handle network errors more explicitly

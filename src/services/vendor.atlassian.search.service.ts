@@ -1,5 +1,6 @@
 import { fetchAtlassian } from '../utils/transport.util.js';
 import { Logger } from '../utils/logger.util.js';
+import { NETWORK_TIMEOUTS } from '../utils/constants.util.js';
 import { URLSearchParams } from 'url';
 import { getAtlassianCredentials } from '../utils/transport.util.js';
 import {
@@ -187,7 +188,9 @@ export async function searchCommits(
 	);
 
 	// Call Bitbucket API with credentials and path
-	return fetchAtlassian(credentials, path);
+	return fetchAtlassian(credentials, path, {
+		timeout: NETWORK_TIMEOUTS.SEARCH_REQUEST_TIMEOUT,
+	});
 }
 
 /**
@@ -268,7 +271,9 @@ export async function searchCode(
 	});
 
 	// Call Bitbucket API with credentials and path
-	return fetchAtlassian(credentials, path);
+	return fetchAtlassian(credentials, path, {
+		timeout: NETWORK_TIMEOUTS.SEARCH_REQUEST_TIMEOUT,
+	});
 }
 
 /**
@@ -323,6 +328,9 @@ async function searchContent(
 		const response = await fetchAtlassian<ContentSearchResponse>(
 			credentials,
 			url,
+			{
+				timeout: NETWORK_TIMEOUTS.SEARCH_REQUEST_TIMEOUT,
+			},
 		);
 
 		return response;

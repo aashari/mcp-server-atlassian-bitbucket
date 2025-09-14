@@ -22,3 +22,17 @@ export const PACKAGE_NAME = '@aashari/mcp-server-atlassian-bitbucket';
  * Used for binary name and CLI help text
  */
 export const CLI_NAME = 'mcp-atlassian-bitbucket';
+
+/**
+ * Network timeout constants (in milliseconds)
+ */
+export const NETWORK_TIMEOUTS = {
+	/** Default timeout for API requests (30 seconds) */
+	DEFAULT_REQUEST_TIMEOUT: 30 * 1000,
+
+	/** Timeout for large file operations like diffs (60 seconds) */
+	LARGE_REQUEST_TIMEOUT: 60 * 1000,
+
+	/** Timeout for search operations (45 seconds) */
+	SEARCH_REQUEST_TIMEOUT: 45 * 1000,
+} as const;
