@@ -1,3 +1,10 @@
+# [1.45.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.44.2...v1.45.0) (2025-10-05)
+
+
+### Features
+
+* api call timeout CWE-400 ([#118](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues/118)) ([d8659ee](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/d8659ee8f7d6baca1a5a391a4ee08368af63af84))
+
 ## [1.44.2](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.44.1...v1.44.2) (2025-09-09)
 
 
