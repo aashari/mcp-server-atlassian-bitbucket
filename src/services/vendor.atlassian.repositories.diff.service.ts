@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Logger } from '../utils/logger.util.js';
+import { NETWORK_TIMEOUTS } from '../utils/constants.util.js';
 import {
 	fetchAtlassian,
 	getAtlassianCredentials,
@@ -126,7 +127,9 @@ export async function getRawDiff(params: GetRawDiffParams): Promise<string> {
 	methodLogger.debug(`Requesting: ${path}`);
 	try {
 		// fetchAtlassian will return string for text/plain
-		const diffText = await fetchAtlassian<string>(credentials, path);
+		const diffText = await fetchAtlassian<string>(credentials, path, {
+			timeout: NETWORK_TIMEOUTS.LARGE_REQUEST_TIMEOUT,
+		});
 		return diffText;
 	} catch (error) {
 		if (error instanceof McpError) throw error;

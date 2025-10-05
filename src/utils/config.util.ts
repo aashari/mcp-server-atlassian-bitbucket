@@ -169,6 +169,21 @@ class ConfigLoader {
 		}
 		return value.toLowerCase() === 'true';
 	}
+
+	/**
+	 * Get a number configuration value
+	 * @param key The configuration key
+	 * @param defaultValue The default value if the key is not found
+	 * @returns The number configuration value or the default value
+	 */
+	getNumber(key: string, defaultValue: number = 0): number {
+		const value = this.get(key);
+		if (value === undefined) {
+			return defaultValue;
+		}
+		const parsed = parseInt(value, 10);
+		return isNaN(parsed) ? defaultValue : parsed;
+	}
 }
 
 // Create and export a singleton instance with the package name from package.json

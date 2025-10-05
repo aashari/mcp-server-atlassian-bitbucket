@@ -10,6 +10,10 @@ import {
 	getAtlassianCredentials,
 } from '../utils/transport.util.js';
 import {
+	validatePageSize,
+	validatePaginationLimits,
+} from '../utils/pagination.util.js';
+import {
 	ListRepositoriesParamsSchema,
 	GetRepositoryParamsSchema,
 	ListCommitsParamsSchema,
@@ -120,9 +124,14 @@ async function list(
 	if (params.role) {
 		queryParams.set('role', params.role);
 	}
-	if (params.pagelen) {
-		queryParams.set('pagelen', params.pagelen.toString());
-	}
+
+	// Validate and enforce page size limits (CWE-770)
+	const validatedPagelen = validatePageSize(
+		params.pagelen,
+		'listRepositories',
+	);
+	queryParams.set('pagelen', validatedPagelen.toString());
+
 	if (params.page) {
 		queryParams.set('page', params.page.toString());
 	}
@@ -138,6 +147,14 @@ async function list(
 		// Validate response with Zod schema
 		try {
 			const validatedData = RepositoriesResponseSchema.parse(rawData);
+
+			// Validate pagination limits to prevent excessive data exposure (CWE-770)
+			if (!validatePaginationLimits(validatedData, 'listRepositories')) {
+				methodLogger.warn(
+					'Response pagination exceeds configured limits',
+				);
+			}
+
 			return validatedData;
 		} catch (error) {
 			if (error instanceof z.ZodError) {
