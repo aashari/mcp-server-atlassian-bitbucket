@@ -6,12 +6,13 @@ Transform how you work with Bitbucket by connecting Claude, Cursor AI, and other
 
 ## What You Can Do
 
-✅ **Ask AI about your code**: "What's the latest commit in my main repository?"  
-✅ **Get PR insights**: "Show me all open pull requests that need review"  
-✅ **Search your codebase**: "Find all JavaScript files that use the authentication function"  
-✅ **Review code changes**: "Compare the differences between my feature branch and main"  
-✅ **Manage pull requests**: "Create a PR for my new-feature branch"  
-✅ **Automate workflows**: "Add a comment to PR #123 with the test results"  
+✅ **Ask AI about your code**: "What's the latest commit in my main repository?"
+✅ **Get PR insights**: "Show me all open pull requests that need review"
+✅ **Search your codebase**: "Find all JavaScript files that use the authentication function"
+✅ **Review code changes**: "Compare the differences between my feature branch and main"
+✅ **Manage pull requests**: "Create a PR for my new-feature branch"
+✅ **Automate workflows**: "Add a comment to PR #123 with the test results"
+✅ **Track issues**: "Show me all open bugs with critical priority" *(opt-in feature)*
 
 ## Perfect For
 
@@ -37,13 +38,14 @@ Get up and running in 2 minutes:
 3. Select **"Bitbucket"** as the product
 4. Choose the appropriate scopes:
    - **For read-only access**: `repository`, `workspace`
-   - **For full functionality**: `repository`, `workspace`, `pullrequest`
+   - **For full functionality**: `repository`, `workspace`, `pullrequest`, `issue`
 5. Copy the generated token (starts with `ATATT`)
 6. Use with your Atlassian email as the username
 
 #### Option B: App Password (Legacy - Will be deprecated)
 
 Generate a Bitbucket App Password (legacy method):
+
 1. Go to [Bitbucket App Passwords](https://bitbucket.org/account/settings/app-passwords/)
 2. Click "Create app password"
 3. Give it a name like "AI Assistant"
@@ -82,6 +84,7 @@ npx -y @aashari/mcp-server-atlassian-bitbucket get-repo --workspace-slug your-wo
 Add this to your Claude configuration file (`~/.claude/claude_desktop_config.json`):
 
 **Option 1: Scoped API Token (recommended - future-proof)**
+
 ```json
 {
   "mcpServers": {
@@ -98,6 +101,7 @@ Add this to your Claude configuration file (`~/.claude/claude_desktop_config.jso
 ```
 
 **Option 2: Legacy App Password (will be deprecated June 2026)**
+
 ```json
 {
   "mcpServers": {
@@ -130,6 +134,7 @@ Then configure your AI assistant to use the MCP server with STDIO transport.
 Create `~/.mcp/configs.json` for system-wide configuration:
 
 **Option 1: Scoped API Token (recommended - future-proof)**
+
 ```json
 {
   "bitbucket": {
@@ -143,6 +148,7 @@ Create `~/.mcp/configs.json` for system-wide configuration:
 ```
 
 **Option 2: Legacy App Password (will be deprecated June 2026)**
+
 ```json
 {
   "bitbucket": {
@@ -157,11 +163,44 @@ Create `~/.mcp/configs.json` for system-wide configuration:
 
 **Alternative config keys:** The system also accepts `"atlassian-bitbucket"`, `"@aashari/mcp-server-atlassian-bitbucket"`, or `"mcp-server-atlassian-bitbucket"` instead of `"bitbucket"`.
 
+## Customize Available Tools
+
+Control which tool domains are exposed to your AI assistant using environment variables. This is useful for:
+
+- Limiting surface area for security
+- Reducing API calls and costs
+- Disabling functionality you don't need
+
+### Tool Domain Configuration
+
+```json
+{
+  "mcpServers": {
+    "bitbucket": {
+      "command": "npx",
+      "args": ["-y", "@aashari/mcp-server-atlassian-bitbucket"],
+      "env": {
+        "ATLASSIAN_USER_EMAIL": "your.email@company.com",
+        "ATLASSIAN_API_TOKEN": "your_scoped_api_token",
+
+        "TOOLS_WORKSPACES_ENABLED": "true",
+        "TOOLS_REPOSITORIES_ENABLED": "true",
+        "TOOLS_PULLREQUESTS_ENABLED": "true",
+        "TOOLS_SEARCH_ENABLED": "true",
+        "TOOLS_DIFF_ENABLED": "true",
+        "TOOLS_ISSUES_ENABLED": "false"
+      }
+    }
+  }
+}
+```
+
 ## Real-World Examples
 
 ### 🔍 Explore Your Repositories
 
 Ask your AI assistant:
+
 - *"List all repositories in my main workspace"*
 - *"Show me details about the backend-api repository"*
 - *"What's the commit history for the feature-auth branch?"*
@@ -170,6 +209,7 @@ Ask your AI assistant:
 ### 📋 Manage Pull Requests
 
 Ask your AI assistant:
+
 - *"Show me all open pull requests that need review"*
 - *"Get details about pull request #42 including the code changes"*
 - *"Create a pull request from feature-login to main branch"*
@@ -179,6 +219,7 @@ Ask your AI assistant:
 ### 🔧 Work with Branches and Code
 
 Ask your AI assistant:
+
 - *"Compare my feature branch with the main branch"*
 - *"Create a new branch called hotfix-login from the main branch"*
 - *"List all branches in the user-service repository"*
@@ -187,10 +228,22 @@ Ask your AI assistant:
 ### 🔎 Search and Discovery
 
 Ask your AI assistant:
+
 - *"Search for JavaScript files that contain 'authentication'"*
 - *"Find all pull requests related to the login feature"*
 - *"Search for repositories in the mobile project"*
 - *"Show me code files that use the React framework"*
+
+### 🐛 Track Issues (Opt-in Feature)
+
+Enable issue tracking with `TOOLS_ISSUES_ENABLED=true`, then ask your AI assistant:
+
+- *"List all open bugs in the backend repository"*
+- *"Show me critical priority issues that need attention"*
+- *"Create a new bug issue for the login timeout problem"*
+- *"Add a comment to issue #25 with the root cause analysis"*
+- *"Update issue #42 to mark it as resolved"*
+- *"Search for issues related to authentication using BBQL"*
 
 ## Troubleshooting
 
@@ -208,6 +261,7 @@ Ask your AI assistant:
    - Go to [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
    - Make sure your token is still active and has the right scopes
    - Update your `~/.mcp/configs.json` file to use the new scoped API token format:
+
    ```json
    {
      "@aashari/mcp-server-atlassian-bitbucket": {
@@ -220,6 +274,7 @@ Ask your AI assistant:
    ```
 
 4. **Verify your credentials**:
+
    ```bash
    # Test your credentials work
    npx -y @aashari/mcp-server-atlassian-bitbucket ls-workspaces
@@ -228,6 +283,7 @@ Ask your AI assistant:
 ### "Workspace not found" or "Repository not found"
 
 1. **Check your workspace slug**:
+
    ```bash
    # List your workspaces to see the correct slugs
    npx -y @aashari/mcp-server-atlassian-bitbucket ls-workspaces
@@ -241,6 +297,7 @@ Ask your AI assistant:
 ### "No default workspace configured"
 
 Set a default workspace to avoid specifying it every time:
+
 ```bash
 export BITBUCKET_DEFAULT_WORKSPACE="your-main-workspace-slug"
 ```
@@ -256,6 +313,7 @@ export BITBUCKET_DEFAULT_WORKSPACE="your-main-workspace-slug"
 ### Getting Help
 
 If you're still having issues:
+
 1. Run a simple test command to verify everything works
 2. Check the [GitHub Issues](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues) for similar problems
 3. Create a new issue with your error message and setup details
@@ -265,11 +323,13 @@ If you're still having issues:
 ### What permissions do I need?
 
 **For Scoped API Tokens** (recommended):
+
 - Your regular Atlassian account with access to Bitbucket
 - Scoped API token created at [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
 - Required scopes: `repository`, `workspace` (add `pullrequest` for PR management)
 
 **For Bitbucket App Passwords** (legacy - being deprecated):
+
 - For **read-only access** (viewing repos, PRs, commits):
   - Workspaces: Read
   - Repositories: Read  
@@ -288,6 +348,7 @@ No! Set `BITBUCKET_DEFAULT_WORKSPACE` in your environment or config file, and it
 ### What AI assistants does this work with?
 
 Any AI assistant that supports the Model Context Protocol (MCP):
+
 - Claude Desktop (most popular)
 - Cursor AI
 - Continue.dev
@@ -296,6 +357,7 @@ Any AI assistant that supports the Model Context Protocol (MCP):
 ### Is my data secure?
 
 Yes! This tool:
+
 - Runs entirely on your local machine
 - Uses your own Bitbucket credentials
 - Never sends your data to third parties
