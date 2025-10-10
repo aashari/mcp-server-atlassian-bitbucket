@@ -6,12 +6,13 @@ Transform how you work with Bitbucket by connecting Claude, Cursor AI, and other
 
 ## What You Can Do
 
-✅ **Ask AI about your code**: "What's the latest commit in my main repository?"  
-✅ **Get PR insights**: "Show me all open pull requests that need review"  
-✅ **Search your codebase**: "Find all JavaScript files that use the authentication function"  
-✅ **Review code changes**: "Compare the differences between my feature branch and main"  
-✅ **Manage pull requests**: "Create a PR for my new-feature branch"  
-✅ **Automate workflows**: "Add a comment to PR #123 with the test results"  
+✅ **Ask AI about your code**: "What's the latest commit in my main repository?"
+✅ **Get PR insights**: "Show me all open pull requests that need review"
+✅ **Search your codebase**: "Find all JavaScript files that use the authentication function"
+✅ **Review code changes**: "Compare the differences between my feature branch and main"
+✅ **Manage pull requests**: "Create a PR for my new-feature branch"
+✅ **Automate workflows**: "Add a comment to PR #123 with the test results"
+✅ **Track issues**: "Show me all open bugs with critical priority" *(opt-in feature)*
 
 ## Perfect For
 
@@ -162,6 +163,38 @@ Create `~/.mcp/configs.json` for system-wide configuration:
 
 **Alternative config keys:** The system also accepts `"atlassian-bitbucket"`, `"@aashari/mcp-server-atlassian-bitbucket"`, or `"mcp-server-atlassian-bitbucket"` instead of `"bitbucket"`.
 
+## Customize Available Tools
+
+Control which tool domains are exposed to your AI assistant using environment variables. This is useful for:
+
+- Limiting surface area for security
+- Reducing API calls and costs
+- Disabling functionality you don't need
+
+### Tool Domain Configuration
+
+```json
+{
+  "mcpServers": {
+    "bitbucket": {
+      "command": "npx",
+      "args": ["-y", "@aashari/mcp-server-atlassian-bitbucket"],
+      "env": {
+        "ATLASSIAN_USER_EMAIL": "your.email@company.com",
+        "ATLASSIAN_API_TOKEN": "your_scoped_api_token",
+
+        "TOOLS_WORKSPACES_ENABLED": "true",
+        "TOOLS_REPOSITORIES_ENABLED": "true",
+        "TOOLS_PULLREQUESTS_ENABLED": "true",
+        "TOOLS_SEARCH_ENABLED": "true",
+        "TOOLS_DIFF_ENABLED": "true",
+        "TOOLS_ISSUES_ENABLED": "false"
+      }
+    }
+  }
+}
+```
+
 ## Real-World Examples
 
 ### 🔍 Explore Your Repositories
@@ -200,6 +233,17 @@ Ask your AI assistant:
 - *"Find all pull requests related to the login feature"*
 - *"Search for repositories in the mobile project"*
 - *"Show me code files that use the React framework"*
+
+### 🐛 Track Issues (Opt-in Feature)
+
+Enable issue tracking with `TOOLS_ISSUES_ENABLED=true`, then ask your AI assistant:
+
+- *"List all open bugs in the backend repository"*
+- *"Show me critical priority issues that need attention"*
+- *"Create a new bug issue for the login timeout problem"*
+- *"Add a comment to issue #25 with the root cause analysis"*
+- *"Update issue #42 to mark it as resolved"*
+- *"Search for issues related to authentication using BBQL"*
 
 ## Troubleshooting
 

@@ -55,15 +55,55 @@ export async function startServer(
 		version: VERSION,
 	});
 
-	// Register all tools
+	// Register tools based on configuration
 	serverLogger.info('Registering MCP tools...');
-	atlassianWorkspaces.registerTools(serverInstance);
-	atlassianRepositories.registerTools(serverInstance);
-	atlassianPullRequests.registerTools(serverInstance);
-	atlassianSearch.registerTools(serverInstance);
-	atlassianDiff.registerTools(serverInstance);
-	atlassianIssues.registerTools(serverInstance);
-	serverLogger.info('All tools registered successfully');
+
+	// Read configuration for each tool domain
+	const toolsConfig = {
+		workspaces: config.getBoolean('TOOLS_WORKSPACES_ENABLED', true),
+		repositories: config.getBoolean('TOOLS_REPOSITORIES_ENABLED', true),
+		pullrequests: config.getBoolean('TOOLS_PULLREQUESTS_ENABLED', true),
+		search: config.getBoolean('TOOLS_SEARCH_ENABLED', true),
+		diff: config.getBoolean('TOOLS_DIFF_ENABLED', true),
+		issues: config.getBoolean('TOOLS_ISSUES_ENABLED', false),
+	};
+
+	const enabledDomains: string[] = [];
+
+	// Conditionally register tools based on configuration
+	if (toolsConfig.workspaces) {
+		atlassianWorkspaces.registerTools(serverInstance);
+		enabledDomains.push('workspaces');
+	}
+	if (toolsConfig.repositories) {
+		atlassianRepositories.registerTools(serverInstance);
+		enabledDomains.push('repositories');
+	}
+	if (toolsConfig.pullrequests) {
+		atlassianPullRequests.registerTools(serverInstance);
+		enabledDomains.push('pullrequests');
+	}
+	if (toolsConfig.search) {
+		atlassianSearch.registerTools(serverInstance);
+		enabledDomains.push('search');
+	}
+	if (toolsConfig.diff) {
+		atlassianDiff.registerTools(serverInstance);
+		enabledDomains.push('diff');
+	}
+	if (toolsConfig.issues) {
+		atlassianIssues.registerTools(serverInstance);
+		enabledDomains.push('issues');
+	}
+	if (enabledDomains.length === 0) {
+		serverLogger.warn(
+			'No tool domains enabled - server will have no tools',
+		);
+	} else {
+		serverLogger.info(
+			`Registered tools for domains: ${enabledDomains.join(', ')}`,
+		);
+	}
 
 	if (mode === 'stdio') {
 		// STDIO Transport
