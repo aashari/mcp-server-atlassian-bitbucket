@@ -1,3 +1,10 @@
+## [1.45.1](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.45.0...v1.45.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* fix diff direction by swapping branch/commit parameters to show correct changes ([#84](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues/84)) - Previously, bb_diff_branches showed what would be removed from destination instead of what source adds. Now correctly displays PR changes with additions as + and deletions as -.
+
 # [1.45.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.44.2...v1.45.0) (2025-10-05)
 
 
