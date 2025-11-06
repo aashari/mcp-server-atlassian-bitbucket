@@ -130,7 +130,7 @@ async function branchDiff(
 					spec,
 				});
 			}
-			// Format the results with correct direction (source → destination)
+			// Format the results
 			let content =
 				params.includeFullDiff && rawDiff
 					? formatFullDiff(
@@ -264,7 +264,7 @@ async function commitDiff(
 				});
 			}
 
-			// Format the results with correct direction (until → since)
+			// Format the results
 			let content =
 				params.includeFullDiff && rawDiff
 					? formatFullDiff(
