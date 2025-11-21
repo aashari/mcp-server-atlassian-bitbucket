@@ -2,6 +2,10 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Logger } from '../utils/logger.util.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
+	checkWriteOperationConfirmation,
+	formatConfirmationWarning,
+} from '../utils/confirmation.util.js';
+import {
 	ListRepositoriesToolArgs,
 	type ListRepositoriesToolArgsType,
 	GetRepositoryToolArgs,
@@ -164,6 +168,17 @@ async function handleAddBranch(args: Record<string, unknown>) {
 	);
 	try {
 		methodLogger.debug('Creating new branch:', args);
+
+		// Check for confirmation before executing write operation
+		const confirmation = checkWriteOperationConfirmation(
+			args.confirmed as boolean | undefined,
+			'Create New Branch',
+			`**Repository**: ${args.workspaceSlug || 'default workspace'}/${args.repoSlug}\n**New Branch**: ${args.newBranchName}\n**Source**: ${args.sourceBranchOrCommit}\n**Action**: Create a new branch in this repository`,
+		);
+
+		if (!confirmation.isConfirmed) {
+			return formatConfirmationWarning(confirmation.warningMessage!);
+		}
 
 		// Pass args directly to controller
 		const result = await handleCreateBranch(
