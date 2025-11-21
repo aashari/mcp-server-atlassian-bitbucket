@@ -316,16 +316,38 @@ function registerTools(server: McpServer) {
 		'bb_add_branch',
 		`Creates a new branch in a specified Bitbucket repository. Requires the workspace slug (\`workspaceSlug\`), repository slug (\`repoSlug\`), the desired new branch name (\`newBranchName\`), and the source branch or commit hash (\`sourceBranchOrCommit\`) to branch from. Requires repository write permissions. Returns a success message.
 
-**⚠️ CRITICAL: REQUIRES EXPLICIT USER APPROVAL ⚠️**
+**🚨 DANGER: REPOSITORY WRITE OPERATION - REQUIRES TRIPLE VERIFICATION 🚨**
 
-This is a WRITE OPERATION that permanently modifies repository data. Before calling this tool, you MUST:
+**THIS IS A PERMANENT WRITE OPERATION THAT MODIFIES REPOSITORY STRUCTURE.**
+**YOU SHOULD NOT DO THIS UNLESS YOU ARE ABSOLUTELY CERTAIN.**
+**IF YOU PROCEED, YOU ACCEPT FULL RESPONSIBILITY FOR ANY CONSEQUENCES.**
 
-1. Use the AskUserQuestion tool to ask the user for explicit approval
-2. Present clear options: "Yes, create the branch" and "No, cancel"
-3. Include details: repository name, new branch name, and source branch
-4. ONLY call this tool if the user explicitly selects "Yes"
+Before calling this tool, you MUST complete the following THREE-STEP approval process:
 
-**NEVER call this tool without first using AskUserQuestion to get user approval.** This is a critical safety mechanism to prevent accidental repository modifications.`,
+**STEP 1 - INITIAL WARNING:**
+Use AskUserQuestion with this exact message:
+"⚠️ WARNING: You are about to write to the repository structure. This will create a new branch in {repoSlug}. This is a PERMANENT change. Do you want to proceed?"
+Options: "Yes, I understand the risk" / "No, cancel"
+- If user selects "No", STOP immediately
+- If user selects "Yes", continue to Step 2
+
+**STEP 2 - SERIOUS WARNING:**
+Use AskUserQuestion with this exact message:
+"🚨 SERIOUS WARNING: This will PERMANENTLY create branch '{newBranchName}' from '{sourceBranchOrCommit}' in {repoSlug}. This cannot be easily undone. You should NOT do this unless you are absolutely sure. This is your SECOND warning. Do you REALLY want to proceed?"
+Options: "Yes, I accept full responsibility" / "No, cancel"
+- If user selects "No", STOP immediately
+- If user selects "Yes", continue to Step 3
+
+**STEP 3 - FINAL WARNING:**
+Use AskUserQuestion with this exact message:
+"🔴 FINAL WARNING: Last chance to cancel. You are about to write to the repository. If anything goes wrong, it's on YOU. Are you 100% certain you want to create this branch?"
+Options: "YES, CREATE THE BRANCH NOW" / "No, cancel"
+- If user selects "No", STOP immediately
+- ONLY if user selects "YES, CREATE THE BRANCH NOW", call this tool
+
+**YOU MUST ASK ALL THREE QUESTIONS SEPARATELY. DO NOT SKIP ANY STEP.**
+**NEVER call this tool without completing all three verification steps.**
+**This is a critical safety mechanism to prevent accidental repository modifications.**`,
 		CreateBranchToolArgsSchema.shape,
 		handleAddBranch,
 	);
