@@ -2,10 +2,6 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Logger } from '../utils/logger.util.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
-	checkWriteOperationConfirmation,
-	formatConfirmationWarning,
-} from '../utils/confirmation.util.js';
-import {
 	ListRepositoriesToolArgs,
 	type ListRepositoriesToolArgsType,
 	GetRepositoryToolArgs,
@@ -169,17 +165,6 @@ async function handleAddBranch(args: Record<string, unknown>) {
 	try {
 		methodLogger.debug('Creating new branch:', args);
 
-		// Check for confirmation before executing write operation
-		const confirmation = checkWriteOperationConfirmation(
-			args.confirmed as boolean | undefined,
-			'Create New Branch',
-			`**Repository**: ${args.workspaceSlug || 'default workspace'}/${args.repoSlug}\n**New Branch**: ${args.newBranchName}\n**Source**: ${args.sourceBranchOrCommit}\n**Action**: Create a new branch in this repository`,
-		);
-
-		if (!confirmation.isConfirmed) {
-			return formatConfirmationWarning(confirmation.warningMessage!);
-		}
-
 		// Pass args directly to controller
 		const result = await handleCreateBranch(
 			args as CreateBranchToolArgsType,
@@ -333,13 +318,14 @@ function registerTools(server: McpServer) {
 
 **⚠️ CRITICAL: REQUIRES EXPLICIT USER APPROVAL ⚠️**
 
-This is a WRITE OPERATION that modifies repository data. You MUST follow this exact workflow:
+This is a WRITE OPERATION that permanently modifies repository data. Before calling this tool, you MUST:
 
-1. **FIRST**: Call this tool WITHOUT the \`confirmed\` parameter to see the warning
-2. **SECOND**: Use the AskUserQuestion tool to present the warning and get explicit user approval with options like "Yes, create branch" and "No, cancel"
-3. **THIRD**: ONLY if user explicitly approves, call this tool again with \`confirmed: true\`
+1. Use the AskUserQuestion tool to ask the user for explicit approval
+2. Present clear options: "Yes, create the branch" and "No, cancel"
+3. Include details: repository name, new branch name, and source branch
+4. ONLY call this tool if the user explicitly selects "Yes"
 
-**NEVER** automatically set \`confirmed: true\` without using AskUserQuestion to get explicit user approval first. This is a safety mechanism to prevent accidental repository modifications.`,
+**NEVER call this tool without first using AskUserQuestion to get user approval.** This is a critical safety mechanism to prevent accidental repository modifications.`,
 		CreateBranchToolArgsSchema.shape,
 		handleAddBranch,
 	);

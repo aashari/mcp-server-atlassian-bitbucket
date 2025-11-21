@@ -168,16 +168,6 @@ export const CreateBranchToolArgsSchema = z.object({
 		.string()
 		.min(1, 'Source branch or commit is required')
 		.describe('The name of the branch or the commit hash to branch from.'),
-
-	/**
-	 * Confirmation flag for write operation
-	 */
-	confirmed: z
-		.boolean()
-		.optional()
-		.describe(
-			'⚠️ WRITE OPERATION: Set to true to confirm you want to CREATE A NEW BRANCH in this repository. If not provided, a warning will be displayed instead of executing the operation. **IMPORTANT**: You MUST use AskUserQuestion to get explicit user approval BEFORE setting this to true. NEVER automatically set this to true without asking the user.',
-		),
 });
 
 export type CreateBranchToolArgsType = z.infer<
