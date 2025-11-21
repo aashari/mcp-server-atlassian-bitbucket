@@ -176,7 +176,7 @@ export const CreateBranchToolArgsSchema = z.object({
 		.boolean()
 		.optional()
 		.describe(
-			'⚠️ WRITE OPERATION: Set to true to confirm you want to CREATE A NEW BRANCH in this repository. If not provided, a warning will be displayed instead of executing the operation.',
+			'⚠️ WRITE OPERATION: Set to true to confirm you want to CREATE A NEW BRANCH in this repository. If not provided, a warning will be displayed instead of executing the operation. **IMPORTANT**: You MUST use AskUserQuestion to get explicit user approval BEFORE setting this to true. NEVER automatically set this to true without asking the user.',
 		),
 });
 

@@ -329,7 +329,17 @@ function registerTools(server: McpServer) {
 	// Add the new branch tool
 	server.tool(
 		'bb_add_branch',
-		`Creates a new branch in a specified Bitbucket repository. Requires the workspace slug (\`workspaceSlug\`), repository slug (\`repoSlug\`), the desired new branch name (\`newBranchName\`), and the source branch or commit hash (\`sourceBranchOrCommit\`) to branch from. Requires repository write permissions. Returns a success message.`,
+		`Creates a new branch in a specified Bitbucket repository. Requires the workspace slug (\`workspaceSlug\`), repository slug (\`repoSlug\`), the desired new branch name (\`newBranchName\`), and the source branch or commit hash (\`sourceBranchOrCommit\`) to branch from. Requires repository write permissions. Returns a success message.
+
+**⚠️ CRITICAL: REQUIRES EXPLICIT USER APPROVAL ⚠️**
+
+This is a WRITE OPERATION that modifies repository data. You MUST follow this exact workflow:
+
+1. **FIRST**: Call this tool WITHOUT the \`confirmed\` parameter to see the warning
+2. **SECOND**: Use the AskUserQuestion tool to present the warning and get explicit user approval with options like "Yes, create branch" and "No, cancel"
+3. **THIRD**: ONLY if user explicitly approves, call this tool again with \`confirmed: true\`
+
+**NEVER** automatically set \`confirmed: true\` without using AskUserQuestion to get explicit user approval first. This is a safety mechanism to prevent accidental repository modifications.`,
 		CreateBranchToolArgsSchema.shape,
 		handleAddBranch,
 	);
