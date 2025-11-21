@@ -137,12 +137,17 @@ export async function fetchAtlassian<T>(
 	const url = `${baseUrl}${normalizedPath}`;
 
 	// Set up authentication and headers
-	const headers = {
+	const headers: Record<string, string> = {
 		Authorization: authHeader,
-		'Content-Type': 'application/json',
 		Accept: 'application/json',
 		...options.headers,
 	};
+
+	// Only set Content-Type when there's a request body
+	// Bitbucket API rejects POST requests with Content-Type but no body (returns 400)
+	if (options.body) {
+		headers['Content-Type'] = 'application/json';
+	}
 
 	// Prepare request options
 	const requestOptions: RequestInit = {
