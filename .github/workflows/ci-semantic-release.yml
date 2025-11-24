@@ -19,7 +19,7 @@ jobs:
         steps:
             # Step 1: Check out the full Git history for proper versioning
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0 # Fetches all history for all branches and tags
 
