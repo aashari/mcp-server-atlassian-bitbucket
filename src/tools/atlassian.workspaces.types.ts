@@ -2,12 +2,6 @@ import { z } from 'zod';
 
 /**
  * Workspaces tool types.
- *
- * NOTE: ListWorkspacesToolArgs has been deprecated.
- * The bb_ls_workspaces tool has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/user/permissions/workspaces" })
- *
- * This file is kept for backwards compatibility with the CLI and controller.
  */
 
 /**

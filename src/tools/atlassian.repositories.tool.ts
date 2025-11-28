@@ -74,21 +74,6 @@ async function handleRepoClone(args: Record<string, unknown>) {
 
 /**
  * Register all Bitbucket repository tools with the MCP server.
- *
- * NOTE: bb_ls_repos has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}" })
- *
- * NOTE: bb_list_branches has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/refs/branches" })
- *
- * NOTE: bb_get_repo has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}" })
- *
- * NOTE: bb_get_commit_history has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/commits" })
- *
- * NOTE: bb_get_file has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/src/{commit}/{path}" })
  */
 function registerTools(server: McpServer) {
 	const registerLogger = Logger.forContext(

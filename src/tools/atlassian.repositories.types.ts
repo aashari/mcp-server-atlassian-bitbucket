@@ -2,16 +2,6 @@ import { z } from 'zod';
 
 /**
  * Repository tool types.
- *
- * NOTE: ListRepositoriesToolArgs MCP tool has been deprecated.
- * The bb_ls_repos tool has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}" })
- *
- * NOTE: ListBranchesToolArgs MCP tool has been deprecated.
- * The bb_list_branches tool has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/refs/branches" })
- *
- * These schemas are kept for backwards compatibility with the CLI and controller.
  */
 
 /**

@@ -62,31 +62,20 @@ function registerTools(server: McpServer) {
 	// Register the generic GET tool
 	server.tool(
 		'bb_get',
-		`Generic Bitbucket REST GET. Returns pretty-printed JSON (or JMESPath-filtered JSON) for any endpoint.
+		`Fetches any Bitbucket Cloud REST API endpoint. Returns raw JSON (optionally filtered via JMESPath).
 
-**How it works**
-- \`path\` must start with "/"; we automatically prefix "/2.0" if you omit it.
-- \`queryParams\` accepts key/value pairs and is encoded into the URL.
-- \`jq\` applies a JMESPath expression to the response; invalid expressions echo the original data with an _jqError hint.
+This is the primary tool for reading Bitbucket data—workspaces, repositories, pull requests, commits, branches, file contents, diffs, and more. Construct the path based on what you need; the Bitbucket REST API follows predictable resource patterns.
 
-**Great for**
-- Workspaces: \`/workspaces\`, \`/workspaces/{workspace}\`
-- Repositories: \`/repositories/{workspace}\`, \`/repositories/{workspace}/{repo_slug}\`
-- Pull requests: \`/repositories/{workspace}/{repo_slug}/pullrequests\` (and \`/{id}\`)
-- History and branches: \`/repositories/{workspace}/{repo_slug}/commits\`, \`/refs/branches\`
-- File content: \`/repositories/{workspace}/{repo_slug}/src/{commit}/{path}\`
-- Many more endpoints exist—when unsure which path to use, consult Bitbucket REST docs; if you have web search tools, use them to confirm the right endpoint and parameters.
+**Parameters:**
+- \`path\` (required): API path starting with "/". The "/2.0" prefix is added automatically if omitted.
+- \`queryParams\` (optional): Key-value pairs for query string (pagination, filtering, sorting, field selection).
+- \`jq\` (optional): JMESPath expression to filter/reshape the JSON response.
 
-**Query examples**
-- \`{"pagelen":"50","page":"2"}\` to page through lists
-- \`{"q":"state=\\"OPEN\\"","sort":"-updated_on"}\` to filter/sort PRs
-- \`{"fields":"values.name,values.uuid"}\` to trim payload size
+**Path patterns:** Bitbucket paths follow REST conventions—\`/repositories/{workspace}/{repo}\` for repo details, append \`/pullrequests\`, \`/commits\`, \`/refs/branches\`, \`/src/{ref}/{filepath}\`, \`/diff/{spec}\`, \`/diffstat/{spec}\` etc. When unsure, consult Bitbucket REST docs or search the web for the specific endpoint.
 
-**JMESPath examples**
-- \`"values[*].name"\` to list names
-- \`"{total:size,items:values[*].{name:name,id:uuid}}"\` to reshape output
+**Filtering & pagination:** Use \`queryParams\` for \`pagelen\`, \`page\`, \`q\` (filter), \`sort\`, and \`fields\` (partial response). Use \`jq\` to extract specific fields from the response (e.g., \`"values[*].name"\` to list names, or \`"{count:size,repos:values[*].slug}"\` to reshape).
 
-Bitbucket REST docs: https://developer.atlassian.com/cloud/bitbucket/rest/intro/. Credentials are required.`,
+Docs: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		GetApiToolArgs.shape,
 		get,
 	);
