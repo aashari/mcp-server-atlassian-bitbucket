@@ -40,7 +40,11 @@ function parseJson<T extends Record<string, unknown>>(
 	}
 
 	// Validate that the parsed value is an object (not null, array, or primitive)
-	if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+	if (
+		parsed === null ||
+		typeof parsed !== 'object' ||
+		Array.isArray(parsed)
+	) {
 		throw new Error(
 			`Invalid --${fieldName}: expected a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.`,
 		);
