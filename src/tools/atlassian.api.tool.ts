@@ -127,11 +127,24 @@ function registerTools(server: McpServer) {
 		'bb_get',
 		`Read any Bitbucket data. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
 
-Paths follow REST conventions: \`/workspaces\`, \`/repositories/{workspace}/{repo}\`, then append \`/pullrequests\`, \`/commits\`, \`/refs/branches\`, \`/src/{ref}/{path}\`, \`/diff/{spec}\`, etc.
+**Common paths:**
+- \`/workspaces\` - list workspaces
+- \`/repositories/{workspace}\` - list repos in workspace
+- \`/repositories/{workspace}/{repo}\` - get repo details
+- \`/repositories/{workspace}/{repo}/pullrequests\` - list PRs
+- \`/repositories/{workspace}/{repo}/pullrequests/{id}\` - get PR details
+- \`/repositories/{workspace}/{repo}/pullrequests/{id}/comments\` - list PR comments
+- \`/repositories/{workspace}/{repo}/pullrequests/{id}/diff\` - get PR diff
+- \`/repositories/{workspace}/{repo}/refs/branches\` - list branches
+- \`/repositories/{workspace}/{repo}/commits\` - list commits
+- \`/repositories/{workspace}/{repo}/src/{commit}/{filepath}\` - get file content
+- \`/repositories/{workspace}/{repo}/diff/{source}..{destination}\` - compare branches/commits
 
-Use \`queryParams\` for pagination (\`pagelen\`, \`page\`), filtering (\`q\`), sorting (\`sort\`), or partial responses (\`fields\`). The \`/2.0\` prefix is added automatically.
+**Query params:** \`pagelen\` (page size), \`page\` (page number), \`q\` (filter), \`sort\` (order), \`fields\` (sparse response)
 
-API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+**Example filters (q param):** \`state="OPEN"\`, \`source.branch.name="feature"\`, \`title~"bug"\`
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		GetApiToolArgs.shape,
 		get,
 	);
@@ -141,11 +154,24 @@ API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		'bb_post',
 		`Create Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
 
-Common operations: create PRs, add comments, create branches. Body structure varies by endpoint—consult Bitbucket docs for required fields.
+**Common operations:**
 
-The \`/2.0\` prefix is added automatically.
+1. **Create PR:** \`/repositories/{workspace}/{repo}/pullrequests\`
+   body: \`{"title": "...", "source": {"branch": {"name": "feature"}}, "destination": {"branch": {"name": "main"}}}\`
 
-API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+2. **Add PR comment:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/comments\`
+   body: \`{"content": {"raw": "Comment text"}}\`
+
+3. **Approve PR:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/approve\`
+   body: \`{}\`
+
+4. **Request changes:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/request-changes\`
+   body: \`{}\`
+
+5. **Merge PR:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/merge\`
+   body: \`{"merge_strategy": "squash"}\` (strategies: merge_commit, squash, fast_forward)
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		RequestWithBodyArgs.shape,
 		post,
 	);
@@ -153,13 +179,20 @@ API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 	// Register the PUT tool
 	server.tool(
 		'bb_put',
-		`Replace Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+		`Replace Bitbucket resources (full update). Returns JSON, optionally filtered with JMESPath (\`jq\` param).
 
-Used for full resource replacement. Common operations: update repository settings, replace file content. Body contains the complete new resource state.
+**Common operations:**
 
-The \`/2.0\` prefix is added automatically.
+1. **Update repository:** \`/repositories/{workspace}/{repo}\`
+   body: \`{"description": "...", "is_private": true, "has_issues": true}\`
 
-API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+2. **Create/update file:** \`/repositories/{workspace}/{repo}/src\`
+   Note: Use multipart form data for file uploads (complex - prefer PATCH for metadata)
+
+3. **Update branch restriction:** \`/repositories/{workspace}/{repo}/branch-restrictions/{id}\`
+   body: \`{"kind": "push", "pattern": "main", "users": [{"uuid": "..."}]}\`
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		RequestWithBodyArgs.shape,
 		put,
 	);
@@ -169,11 +202,21 @@ API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		'bb_patch',
 		`Partially update Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
 
-Used for partial updates. Common operations: update PR title/description, modify repository properties. Body contains only the fields to update.
+**Common operations:**
 
-The \`/2.0\` prefix is added automatically.
+1. **Update PR title/description:** \`/repositories/{workspace}/{repo}/pullrequests/{id}\`
+   body: \`{"title": "New title", "description": "Updated description"}\`
 
-API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+2. **Update PR reviewers:** \`/repositories/{workspace}/{repo}/pullrequests/{id}\`
+   body: \`{"reviewers": [{"uuid": "{user-uuid}"}]}\`
+
+3. **Update repository properties:** \`/repositories/{workspace}/{repo}\`
+   body: \`{"description": "New description"}\`
+
+4. **Update comment:** \`/repositories/{workspace}/{repo}/pullrequests/{pr_id}/comments/{comment_id}\`
+   body: \`{"content": {"raw": "Updated comment"}}\`
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		RequestWithBodyArgs.shape,
 		patch,
 	);
@@ -183,11 +226,17 @@ API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		'bb_delete',
 		`Delete Bitbucket resources. Returns JSON (if any), optionally filtered with JMESPath (\`jq\` param).
 
-Common operations: delete branches, remove comments, decline PRs. Some DELETE endpoints return empty responses.
+**Common operations:**
 
-The \`/2.0\` prefix is added automatically.
+1. **Delete branch:** \`/repositories/{workspace}/{repo}/refs/branches/{branch_name}\`
+2. **Delete PR comment:** \`/repositories/{workspace}/{repo}/pullrequests/{pr_id}/comments/{comment_id}\`
+3. **Decline PR:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/decline\`
+4. **Remove PR approval:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/approve\`
+5. **Delete repository:** \`/repositories/{workspace}/{repo}\` (caution: irreversible)
 
-API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+Note: Most DELETE endpoints return 204 No Content on success.
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		DeleteApiToolArgs.shape,
 		del,
 	);
