@@ -21,19 +21,32 @@ const cliLogger = Logger.forContext('cli/atlassian.api.cli.ts');
 cliLogger.debug('Bitbucket API CLI module initialized');
 
 /**
- * Parse JSON string with error handling
+ * Parse JSON string with error handling and basic validation
  * @param jsonString - JSON string to parse
  * @param fieldName - Name of the field for error messages
  * @returns Parsed JSON object
  */
-function parseJson<T>(jsonString: string, fieldName: string): T {
+function parseJson<T extends Record<string, unknown>>(
+	jsonString: string,
+	fieldName: string,
+): T {
+	let parsed: unknown;
 	try {
-		return JSON.parse(jsonString) as T;
+		parsed = JSON.parse(jsonString);
 	} catch {
 		throw new Error(
 			`Invalid JSON in --${fieldName}. Please provide valid JSON.`,
 		);
 	}
+
+	// Validate that the parsed value is an object (not null, array, or primitive)
+	if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+		throw new Error(
+			`Invalid --${fieldName}: expected a JSON object, got ${parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed}.`,
+		);
+	}
+
+	return parsed as T;
 }
 
 /**
