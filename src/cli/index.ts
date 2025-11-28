@@ -8,6 +8,7 @@ import atlassianRepositoriesCli from './atlassian.repositories.cli.js';
 import atlassianPullRequestsCli from './atlassian.pullrequests.cli.js';
 import atlassianSearchCommands from './atlassian.search.cli.js';
 import diffCli from './atlassian.diff.cli.js';
+import atlassianApiCli from './atlassian.api.cli.js';
 
 // Package description
 const DESCRIPTION =
@@ -41,6 +42,9 @@ export async function runCli(args: string[]) {
 
 	diffCli.register(program);
 	cliLogger.debug('Diff commands registered');
+
+	atlassianApiCli.register(program);
+	cliLogger.debug('API commands registered');
 
 	// Handle unknown commands
 	program.on('command:*', (operands) => {

@@ -119,7 +119,9 @@ export class CliTestUtil {
 	 * @param output - The CLI output string
 	 * @returns Parsed JSON object or null if no valid JSON found
 	 */
-	static extractJsonFromOutput(output: string): Record<string, unknown> | null {
+	static extractJsonFromOutput(
+		output: string,
+	): Record<string, unknown> | null {
 		// Split by newlines and find lines that could be start of JSON
 		const lines = output.split('\n');
 		let jsonStartIndex = -1;

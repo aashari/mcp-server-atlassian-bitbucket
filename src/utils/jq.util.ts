@@ -23,10 +23,7 @@ const logger = Logger.forContext('utils/jq.util.ts');
  * // Array operations
  * applyJqFilter(data, "values[*].name")
  */
-export function applyJqFilter(
-	data: unknown,
-	filter?: string,
-): unknown {
+export function applyJqFilter(data: unknown, filter?: string): unknown {
 	const methodLogger = logger.forMethod('applyJqFilter');
 
 	// Return original data if no filter provided

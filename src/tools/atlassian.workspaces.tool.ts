@@ -4,8 +4,6 @@ import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	ListWorkspacesToolArgs,
 	type ListWorkspacesToolArgsType,
-	type GetWorkspaceToolArgsType,
-	GetWorkspaceToolArgs,
 } from './atlassian.workspaces.types.js';
 
 import atlassianWorkspacesController from '../controllers/atlassian.workspaces.controller.js';
@@ -56,47 +54,6 @@ async function listWorkspaces(args: Record<string, unknown>) {
 }
 
 /**
- * MCP Tool: Get Bitbucket Workspace Details
- *
- * Retrieves detailed information about a specific Bitbucket workspace.
- * Returns a formatted markdown response with workspace metadata.
- *
- * @param args - Tool arguments containing the workspace slug
- * @returns MCP response with formatted workspace details
- * @throws Will return error message if workspace retrieval fails
- */
-async function getWorkspace(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.workspaces.tool.ts',
-		'getWorkspace',
-	);
-	methodLogger.debug('Getting workspace details:', args);
-
-	try {
-		// Pass args directly to controller without any logic
-		const result = await atlassianWorkspacesController.get(
-			args as GetWorkspaceToolArgsType,
-		);
-
-		methodLogger.debug(
-			'Successfully retrieved workspace details from controller',
-		);
-
-		return {
-			content: [
-				{
-					type: 'text' as const,
-					text: result.content,
-				},
-			],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to get workspace details', error);
-		return formatErrorForMcpTool(error);
-	}
-}
-
-/**
  * Register all Bitbucket workspace tools with the MCP server.
  */
 function registerTools(server: McpServer) {
@@ -114,13 +71,8 @@ function registerTools(server: McpServer) {
 		listWorkspaces,
 	);
 
-	// Register the get workspace details tool
-	server.tool(
-		'bb_get_workspace',
-		`Retrieves detailed information for a workspace identified by \`workspaceSlug\`. Returns raw JSON response from Bitbucket API. Use the optional \`jq\` parameter with a JMESPath expression to filter/transform the response (e.g., "name", "links.html.href", "{name: name, slug: slug}"). Requires Bitbucket credentials to be configured.`,
-		GetWorkspaceToolArgs.shape,
-		getWorkspace,
-	);
+	// Note: bb_get_workspace has been replaced by the generic bb_get tool
+	// Use: bb_get({ path: "/workspaces/{workspace_slug}" })
 
 	registerLogger.debug('Successfully registered Workspace tools');
 }

@@ -6,15 +6,11 @@ import {
 	PaginationType,
 } from '../utils/pagination.util.js';
 import { ControllerResponse } from '../types/common.types.js';
-import {
-	ListWorkspacesToolArgsType,
-	GetWorkspaceToolArgsType,
-} from '../tools/atlassian.workspaces.types.js';
+import { ListWorkspacesToolArgsType } from '../tools/atlassian.workspaces.types.js';
 import { formatWorkspacesList } from './atlassian.workspaces.formatter.js';
 import { ListWorkspacesParams } from '../services/vendor.atlassian.workspaces.types.js';
 import { DEFAULT_PAGE_SIZE, applyDefaults } from '../utils/defaults.util.js';
 import { formatPagination } from '../utils/formatter.util.js';
-import { applyJqFilter, toJsonString } from '../utils/jq.util.js';
 
 // Create a contextualized logger for this file
 const controllerLogger = Logger.forContext(
@@ -26,7 +22,8 @@ controllerLogger.debug('Bitbucket workspaces controller initialized');
 
 /**
  * Controller for managing Bitbucket workspaces.
- * Provides functionality for listing workspaces and retrieving workspace details.
+ * Provides functionality for listing workspaces.
+ * Note: Get workspace details is handled by the generic bb_get tool.
  */
 
 /**
@@ -111,47 +108,4 @@ async function list(
 	}
 }
 
-/**
- * Get details of a specific Bitbucket workspace
- * @param options - Object containing the workspace slug and optional jq filter
- * @param options.workspaceSlug - The slug of the workspace to retrieve
- * @param options.jq - Optional JMESPath expression to filter the response
- * @returns Promise with raw JSON workspace data (optionally filtered)
- * @throws Error if workspace retrieval fails
- */
-async function get(
-	options: GetWorkspaceToolArgsType,
-): Promise<ControllerResponse> {
-	const { workspaceSlug, jq } = options;
-	const methodLogger = Logger.forContext(
-		'controllers/atlassian.workspaces.controller.ts',
-		'get',
-	);
-
-	methodLogger.debug(
-		`Getting Bitbucket workspace with slug: ${workspaceSlug}...`,
-	);
-
-	try {
-		const workspaceData =
-			await atlassianWorkspacesService.get(workspaceSlug);
-		methodLogger.debug(`Retrieved workspace: ${workspaceData.slug}`);
-
-		// Apply JQ filter if provided, otherwise return raw data
-		const result = applyJqFilter(workspaceData, jq);
-
-		return {
-			content: toJsonString(result),
-		};
-	} catch (error) {
-		// Use the standardized error handler
-		throw handleControllerError(error, {
-			entityType: 'Workspace',
-			operation: 'retrieving',
-			source: 'controllers/atlassian.workspaces.controller.ts@get',
-			additionalInfo: { options },
-		});
-	}
-}
-
-export default { list, get };
+export default { list };

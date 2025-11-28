@@ -3,20 +3,16 @@ import { Logger } from '../utils/logger.util.js';
 import { handleCliError } from '../utils/error.util.js';
 // Import directly from specialized controllers
 import { handleRepositoriesList } from '../controllers/atlassian.repositories.list.controller.js';
-import { handleRepositoryDetails } from '../controllers/atlassian.repositories.details.controller.js';
-import { handleCommitHistory } from '../controllers/atlassian.repositories.commit.controller.js';
 import {
 	handleCreateBranch,
 	handleListBranches,
 } from '../controllers/atlassian.repositories.branch.controller.js';
-import {
-	handleCloneRepository,
-	handleGetFileContent,
-} from '../controllers/atlassian.repositories.content.controller.js';
+import { handleCloneRepository } from '../controllers/atlassian.repositories.content.controller.js';
 
 /**
  * CLI module for managing Bitbucket repositories.
- * Provides commands for listing repositories and retrieving repository details.
+ * Provides commands for listing repositories and managing branches.
+ * Note: Get repository details, commit history, and file content are available via the generic 'get' command.
  * All commands require valid Atlassian credentials.
  */
 
@@ -40,11 +36,8 @@ function register(program: Command): void {
 	methodLogger.debug('Registering Bitbucket Repositories CLI commands...');
 
 	registerListRepositoriesCommand(program);
-	registerGetRepositoryCommand(program);
-	registerGetCommitHistoryCommand(program);
 	registerAddBranchCommand(program);
 	registerCloneRepositoryCommand(program);
-	registerGetFileCommand(program);
 	registerListBranchesCommand(program);
 
 	methodLogger.debug('CLI commands registered successfully');
@@ -113,114 +106,6 @@ function registerListRepositoriesCommand(program: Command): void {
 				// Output result content
 				console.log(result.content);
 			} catch (error) {
-				handleCliError(error);
-			}
-		});
-}
-
-/**
- * Register the command for retrieving a specific Bitbucket repository
- * @param program - The Commander program instance
- */
-function registerGetRepositoryCommand(program: Command): void {
-	program
-		.command('get-repo')
-		.description(
-			'Get detailed information about a specific Bitbucket repository.',
-		)
-		.option(
-			'-w, --workspace-slug <slug>',
-			'Workspace slug containing the repository. If not provided, uses your default workspace (either configured via BITBUCKET_DEFAULT_WORKSPACE or first workspace in your account). Example: "myteam"',
-		)
-		.requiredOption(
-			'-r, --repo-slug <slug>',
-			'Repository slug to retrieve. Must be a valid repository in the workspace. Example: "project-api"',
-		)
-		.action(async (options) => {
-			const actionLogger = Logger.forContext(
-				'cli/atlassian.repositories.cli.ts',
-				'get-repo',
-			);
-			try {
-				actionLogger.debug(
-					`Fetching repository: ${options.workspaceSlug}/${options.repoSlug}`,
-				);
-
-				const result = await handleRepositoryDetails({
-					workspaceSlug: options.workspaceSlug,
-					repoSlug: options.repoSlug,
-				});
-
-				console.log(result.content);
-			} catch (error) {
-				actionLogger.error('Operation failed:', error);
-				handleCliError(error);
-			}
-		});
-}
-
-/**
- * Register the command for retrieving commit history from a repository
- * @param program - The Commander program instance
- */
-function registerGetCommitHistoryCommand(program: Command): void {
-	program
-		.command('get-commit-history')
-		.description('Get commit history for a Bitbucket repository.')
-		.option(
-			'-w, --workspace-slug <slug>',
-			'Workspace slug containing the repository. If not provided, uses your default workspace. Example: "myteam"',
-		)
-		.requiredOption(
-			'-r, --repo-slug <slug>',
-			'Repository slug to get commit history from. Example: "project-api"',
-		)
-		.option(
-			'-v, --revision <branch-or-tag>',
-			'Filter commits by a specific branch, tag, or commit hash.',
-		)
-		.option(
-			'--path <file-path>',
-			'Filter commits to those that affect this specific file path.',
-		)
-		.option(
-			'-l, --limit <number>',
-			'Maximum number of commits to return (1-100). Defaults to 25 if omitted.',
-		)
-		.option(
-			'-c, --cursor <string>',
-			'Pagination cursor for retrieving the next set of results.',
-		)
-		.action(async (options) => {
-			const actionLogger = Logger.forContext(
-				'cli/atlassian.repositories.cli.ts',
-				'get-commit-history',
-			);
-			try {
-				actionLogger.debug('Processing command options:', options);
-
-				// Map CLI options to controller params - keep only type conversions
-				const requestOptions = {
-					workspaceSlug: options.workspaceSlug,
-					repoSlug: options.repoSlug,
-					revision: options.revision,
-					path: options.path,
-					limit: options.limit
-						? parseInt(options.limit, 10)
-						: undefined,
-					cursor: options.cursor,
-				};
-
-				actionLogger.debug(
-					'Fetching commit history with options:',
-					requestOptions,
-				);
-				const result = await handleCommitHistory(requestOptions);
-				actionLogger.debug('Successfully retrieved commit history');
-
-				console.log(result.content);
-			} catch (error) {
-				actionLogger.error('Operation failed:', error);
 				handleCliError(error);
 			}
 		});
@@ -334,57 +219,6 @@ function registerCloneRepositoryCommand(program: Command): void {
 				console.log(result.content);
 			} catch (error) {
 				actionLogger.error('Clone operation failed:', error);
-				handleCliError(error);
-			}
-		});
-}
-
-/**
- * Register the command for getting a file from a Bitbucket repository
- *
- * @param program - The Commander program instance
- */
-function registerGetFileCommand(program: Command): void {
-	program
-		.command('get-file')
-		.description('Get the content of a file from a Bitbucket repository.')
-		.requiredOption(
-			'-w, --workspace-slug <slug>',
-			'Workspace slug containing the repository. Must be a valid workspace slug from your Bitbucket account. Example: "myteam"',
-		)
-		.requiredOption(
-			'-r, --repo-slug <slug>',
-			'Repository slug to get the file from. Must be a valid repository slug in the specified workspace. Example: "project-api"',
-		)
-		.requiredOption(
-			'-f, --file-path <path>',
-			'Path to the file in the repository. Example: "README.md" or "src/main.js"',
-		)
-		.option(
-			'-v, --revision <branch-tag-or-commit>',
-			'Branch name, tag, or commit hash to retrieve the file from. If omitted, the default branch is used.',
-		)
-		.action(async (options) => {
-			const actionLogger = Logger.forContext(
-				'cli/atlassian.repositories.cli.ts',
-				'get-file',
-			);
-			try {
-				actionLogger.debug(
-					`Fetching file: ${options.workspaceSlug}/${options.repoSlug}/${options.filePath}`,
-					options.revision ? { revision: options.revision } : {},
-				);
-
-				const result = await handleGetFileContent({
-					workspaceSlug: options.workspaceSlug,
-					repoSlug: options.repoSlug,
-					path: options.filePath,
-					ref: options.revision,
-				});
-
-				console.log(result.content);
-			} catch (error) {
-				actionLogger.error('Operation failed:', error);
 				handleCliError(error);
 			}
 		});

@@ -76,64 +76,8 @@ export type ListPullRequestsToolArgsType = z.infer<
 	typeof ListPullRequestsToolArgs
 >;
 
-/**
- * Schema for get-pull-request tool arguments
- */
-export const GetPullRequestToolArgs = z.object({
-	/**
-	 * Workspace slug containing the repository
-	 */
-	workspaceSlug: z
-		.string()
-		.optional()
-		.describe(
-			'Workspace slug containing the repository. If not provided, the system will use your default workspace. Example: "myteam"',
-		),
-
-	/**
-	 * Repository slug containing the pull request
-	 */
-	repoSlug: z
-		.string()
-		.min(1, 'Repository slug is required')
-		.describe(
-			'Repository slug containing the pull request. This must be a valid repository in the specified workspace. Example: "project-api"',
-		),
-
-	/**
-	 * Pull request identifier
-	 */
-	prId: z
-		.string()
-		.min(1, 'Pull request ID is required')
-		.describe(
-			'Numeric ID of the pull request to retrieve as a string. Must be a valid pull request ID in the specified repository. Example: "42"',
-		),
-
-	/**
-	 * Optional flag to request the full diff
-	 */
-	includeFullDiff: z
-		.boolean()
-		.optional()
-		.describe(
-			'Set to true to retrieve the full diff content instead of just the summary. Default: true (rich output by default)',
-		)
-		.default(true),
-
-	/**
-	 * Optional flag to include comments
-	 */
-	includeComments: z
-		.boolean()
-		.optional()
-		.describe(
-			'Set to true to retrieve comments for the pull request. Default: false. Note: Enabling this may increase response time for pull requests with many comments due to additional API calls.',
-		)
-		.default(false),
-});
-
-export type GetPullRequestToolArgsType = z.infer<typeof GetPullRequestToolArgs>;
+// Note: GetPullRequestToolArgs has been replaced by the generic bb_get tool
+// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
 
 /**
  * Schema for list-pr-comments tool arguments

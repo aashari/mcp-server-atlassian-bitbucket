@@ -5,8 +5,6 @@ import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	ListPullRequestsToolArgs,
 	type ListPullRequestsToolArgsType,
-	GetPullRequestToolArgs,
-	type GetPullRequestToolArgsType,
 	ListPullRequestCommentsToolArgs,
 	type ListPullRequestCommentsToolArgsType,
 	CreatePullRequestCommentToolArgs,
@@ -65,47 +63,6 @@ async function listPullRequests(args: Record<string, unknown>) {
 		};
 	} catch (error) {
 		methodLogger.error('Failed to list pull requests', error);
-		return formatErrorForMcpTool(error);
-	}
-}
-
-/**
- * MCP Tool: Get Bitbucket Pull Request Details
- *
- * Retrieves detailed information about a specific pull request.
- * Returns a formatted markdown response with pull request details.
- *
- * @param args - Tool arguments containing the workspace, repository, and pull request identifiers
- * @returns MCP response with formatted pull request details
- * @throws Will return error message if pull request retrieval fails
- */
-async function getPullRequest(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.pullrequests.tool.ts',
-		'getPullRequest',
-	);
-	methodLogger.debug('Getting Bitbucket pull request details:', args);
-
-	try {
-		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.get(
-			args as GetPullRequestToolArgsType,
-		);
-
-		methodLogger.debug(
-			'Successfully retrieved pull request details from controller',
-		);
-
-		return {
-			content: [
-				{
-					type: 'text' as const,
-					text: result.content,
-				},
-			],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to get pull request details', error);
 		return formatErrorForMcpTool(error);
 	}
 }
@@ -388,13 +345,8 @@ function registerTools(server: McpServer) {
 		listPullRequests,
 	);
 
-	// Register the get pull request tool
-	server.tool(
-		'bb_get_pr',
-		`Retrieves detailed information about a specific pull request identified by \`prId\` within a repository (\`repoSlug\`). If \`workspaceSlug\` is not provided, the system will use your default workspace. Includes PR details, status, reviewers, and diff statistics. Set \`includeFullDiff\` to true (default) for the complete code changes. Set \`includeComments\` to true to also retrieve comments (default: false; Note: Enabling this may increase response time for pull requests with many comments). Returns rich information as formatted Markdown, including PR summary, code changes, and optionally comments. Requires Bitbucket credentials to be configured.`,
-		GetPullRequestToolArgs.shape,
-		getPullRequest,
-	);
+	// Note: bb_get_pr has been replaced by the generic bb_get tool
+	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
 
 	// Register the list pull request comments tool
 	server.tool(

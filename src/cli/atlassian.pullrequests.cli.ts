@@ -28,7 +28,8 @@ function register(program: Command): void {
 	methodLogger.debug('Registering Bitbucket Pull Requests CLI commands...');
 
 	registerListPullRequestsCommand(program);
-	registerGetPullRequestCommand(program);
+	// Note: get-pr has been replaced by the generic 'get' command
+	// Use: get --path "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}"
 	registerListPullRequestCommentsCommand(program);
 	registerAddPullRequestCommentCommand(program);
 	registerAddPullRequestCommand(program);
@@ -115,67 +116,8 @@ function registerListPullRequestsCommand(program: Command): void {
 		});
 }
 
-/**
- * Register the command for retrieving a specific Bitbucket pull request
- * @param program - The Commander program instance
- */
-function registerGetPullRequestCommand(program: Command): void {
-	program
-		.command('get-pr')
-		.description(
-			'Get detailed information about a specific Bitbucket pull request.',
-		)
-		.option(
-			'-w, --workspace-slug <slug>',
-			'Workspace slug containing the repository. If not provided, uses your default workspace. Example: "myteam"',
-		)
-		.requiredOption(
-			'-r, --repo-slug <slug>',
-			'Repository slug containing the pull request. Must be a valid repository in the specified workspace. Example: "project-api"',
-		)
-		.requiredOption(
-			'-p, --pr-id <id>',
-			'Numeric ID of the pull request to retrieve. Must be a valid pull request ID in the specified repository. Example: "42"',
-		)
-		.option(
-			'--include-full-diff',
-			'Retrieve the full diff content instead of just the summary. Default: true (rich output by default)',
-			true,
-		)
-		.option(
-			'--include-comments',
-			'Retrieve comments for the pull request. Default: false. Note: Enabling this may increase response time for pull requests with many comments due to additional API calls',
-			false,
-		)
-		.action(async (options) => {
-			const actionLogger = Logger.forContext(
-				'cli/atlassian.pullrequests.cli.ts',
-				'get-pr',
-			);
-			try {
-				actionLogger.debug('Processing command options:', options);
-
-				// Map CLI options to controller params
-				const params = {
-					workspaceSlug: options.workspaceSlug,
-					repoSlug: options.repoSlug,
-					prId: options.prId,
-					includeFullDiff: options.includeFullDiff,
-					includeComments: options.includeComments,
-				};
-
-				actionLogger.debug('Fetching pull request:', params);
-				const result =
-					await atlassianPullRequestsController.get(params);
-				actionLogger.debug('Successfully retrieved pull request');
-
-				console.log(result.content);
-			} catch (error) {
-				actionLogger.error('Operation failed:', error);
-				handleCliError(error);
-			}
-		});
-}
+// Note: registerGetPullRequestCommand has been replaced by the generic 'get' command
+// Use: get --path "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}"
 
 /**
  * Register the command for listing comments on a Bitbucket pull request

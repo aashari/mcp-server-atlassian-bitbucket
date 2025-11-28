@@ -158,7 +158,7 @@ export async function handleCloneRepository(
 					`Target directory already exists: ${targetDir}`,
 				);
 				return {
-					content: `⚠️ Target directory \`${targetDir}\` already exists. Please choose a different target path or remove the existing directory.`,
+					content: `Target directory \`${targetDir}\` already exists. Please choose a different target path or remove the existing directory.`,
 				};
 			}
 		} catch {
@@ -181,7 +181,7 @@ export async function handleCloneRepository(
 			// Return success message with more detailed information
 			return {
 				content:
-					`✅ Successfully cloned repository \`${workspaceSlug}/${repoSlug}\` to \`${targetDir}\` using ${cloneProtocol}.\n\n` +
+					`Successfully cloned repository \`${workspaceSlug}/${repoSlug}\` to \`${targetDir}\` using ${cloneProtocol}.\n\n` +
 					`**Details:**\n` +
 					`- **Repository**: ${workspaceSlug}/${repoSlug}\n` +
 					`- **Clone Protocol**: ${cloneProtocol}\n` +
@@ -216,109 +216,6 @@ export async function handleCloneRepository(
 			entityType: 'Repository',
 			operation: 'clone',
 			source: 'controllers/atlassian.repositories.content.controller.ts@handleCloneRepository',
-			additionalInfo: options,
-		});
-	}
-}
-
-/**
- * Retrieves file content from a repository
- * @param options Options including repository identifiers and file path
- * @returns The file content as text
- */
-export async function handleGetFileContent(options: {
-	workspaceSlug?: string;
-	repoSlug: string;
-	path: string;
-	ref?: string;
-}): Promise<ControllerResponse> {
-	const methodLogger = logger.forMethod('handleGetFileContent');
-	methodLogger.debug('Getting file content with options:', options);
-
-	try {
-		// Required parameters check
-		const { repoSlug, path: filePath } = options;
-		let { workspaceSlug } = options;
-
-		if (!workspaceSlug) {
-			methodLogger.debug(
-				'No workspace provided, fetching default workspace',
-			);
-			const defaultWorkspace = await getDefaultWorkspace();
-			if (!defaultWorkspace) {
-				throw new Error(
-					'No default workspace found. Please provide a workspace slug.',
-				);
-			}
-			workspaceSlug = defaultWorkspace;
-			methodLogger.debug(`Using default workspace: ${defaultWorkspace}`);
-		}
-
-		if (!repoSlug) {
-			throw new Error('Repository slug is required');
-		}
-		if (!filePath) {
-			throw new Error('File path is required');
-		}
-
-		// Get repository details to determine the correct default branch
-		let commitRef = options.ref;
-		if (!commitRef) {
-			methodLogger.debug(
-				`No ref provided, fetching repository details to get default branch`,
-			);
-			try {
-				const repoDetails = await atlassianRepositoriesService.get({
-					workspace: workspaceSlug,
-					repo_slug: repoSlug,
-				});
-
-				// Use the repository's actual default branch
-				if (repoDetails.mainbranch?.name) {
-					commitRef = repoDetails.mainbranch.name;
-					methodLogger.debug(
-						`Using repository default branch: ${commitRef}`,
-					);
-				} else {
-					// Fallback to common default branches
-					commitRef = 'main';
-					methodLogger.debug(
-						`No default branch found, falling back to: ${commitRef}`,
-					);
-				}
-			} catch (repoError) {
-				methodLogger.warn(
-					'Failed to get repository details, using fallback branch',
-					repoError,
-				);
-				commitRef = 'main';
-			}
-		}
-
-		// Get file content from service
-		methodLogger.debug(
-			`Fetching file content for ${workspaceSlug}/${repoSlug}/${filePath}`,
-			{ ref: commitRef },
-		);
-		const fileContent = await atlassianRepositoriesService.getFileContent({
-			workspace: workspaceSlug,
-			repo_slug: repoSlug,
-			path: filePath,
-			commit: commitRef,
-		});
-
-		// Return the file content as is
-		methodLogger.debug(
-			`Retrieved file content (${fileContent.length} bytes)`,
-		);
-		return {
-			content: fileContent,
-		};
-	} catch (error) {
-		throw handleControllerError(error, {
-			entityType: 'File Content',
-			operation: 'get',
-			source: 'controllers/atlassian.repositories.content.controller.ts@handleGetFileContent',
 			additionalInfo: options,
 		});
 	}

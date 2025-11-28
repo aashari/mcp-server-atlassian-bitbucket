@@ -1,7 +1,6 @@
 import { ControllerResponse } from '../types/common.types.js';
 import {
 	ListPullRequestsToolArgsType,
-	GetPullRequestToolArgsType,
 	ListPullRequestCommentsToolArgsType,
 	CreatePullRequestCommentToolArgsType,
 	CreatePullRequestToolArgsType,
@@ -11,7 +10,8 @@ import {
 } from '../tools/atlassian.pullrequests.types.js';
 
 import listController from './atlassian.pullrequests.list.controller.js';
-import getController from './atlassian.pullrequests.get.controller.js';
+// Note: getController replaced by the generic bb_get tool
+// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
 import commentsController from './atlassian.pullrequests.comments.controller.js';
 import createController from './atlassian.pullrequests.create.controller.js';
 import updateController from './atlassian.pullrequests.update.controller.js';
@@ -46,16 +46,8 @@ async function list(
 	return listController.list(options);
 }
 
-/**
- * Get detailed information about a specific Bitbucket pull request
- * @param options - Options including workspace slug, repo slug, and pull request ID
- * @returns Promise with formatted pull request details as Markdown content
- */
-async function get(
-	options: GetPullRequestToolArgsType,
-): Promise<ControllerResponse> {
-	return getController.get(options);
-}
+// Note: get() function replaced by the generic bb_get tool
+// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
 
 /**
  * List comments on a Bitbucket pull request
@@ -124,9 +116,9 @@ async function reject(
 }
 
 // Export the controller functions
+// Note: get() replaced by the generic bb_get tool
 export default {
 	list,
-	get,
 	listComments,
 	addComment,
 	add,

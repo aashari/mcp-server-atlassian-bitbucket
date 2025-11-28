@@ -16,6 +16,7 @@ import atlassianRepositories from './tools/atlassian.repositories.tool.js';
 import atlassianPullRequests from './tools/atlassian.pullrequests.tool.js';
 import atlassianSearch from './tools/atlassian.search.tool.js';
 import atlassianDiff from './tools/atlassian.diff.tool.js';
+import atlassianApi from './tools/atlassian.api.tool.js';
 
 // Create a contextualized logger for this file
 const indexLogger = Logger.forContext('index.ts');
@@ -61,6 +62,7 @@ export async function startServer(
 	atlassianPullRequests.registerTools(serverInstance);
 	atlassianSearch.registerTools(serverInstance);
 	atlassianDiff.registerTools(serverInstance);
+	atlassianApi.registerTools(serverInstance);
 	serverLogger.info('All tools registered successfully');
 
 	if (mode === 'stdio') {

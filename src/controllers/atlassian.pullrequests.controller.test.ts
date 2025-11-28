@@ -118,15 +118,6 @@ describe('Atlassian Pull Requests Controller', () => {
 		}
 	}
 
-	async function getPullRequestInfo(): Promise<{
-		workspaceSlug: string;
-		repoSlug: string;
-		prId: string;
-	} | null> {
-		// Attempt to get a first PR ID
-		return await getFirstPullRequestId();
-	}
-
 	// List tests
 	describe('list', () => {
 		it('should list pull requests for a repository', async () => {
@@ -359,97 +350,8 @@ describe('Atlassian Pull Requests Controller', () => {
 		}, 10000);
 	});
 
-	// Get PR tests
-	describe('get', () => {
-		it('should retrieve detailed pull request information', async () => {
-			if (skipIfNoCredentials()) return;
-
-			const prInfo = await getPullRequestInfo();
-			if (!prInfo) {
-				console.warn('Skipping test: No pull request info found.');
-				return;
-			}
-
-			const result = await atlassianPullRequestsController.get({
-				workspaceSlug: prInfo.workspaceSlug,
-				repoSlug: prInfo.repoSlug,
-				prId: prInfo.prId,
-				includeFullDiff: false,
-				includeComments: false,
-			});
-
-			// Verify the response structure
-			expect(result).toHaveProperty('content');
-			expect(typeof result.content).toBe('string');
-
-			// Check for expected format based on the formatter output
-			expect(result.content).toMatch(/^# Pull Request/);
-			expect(result.content).toContain('**ID**:');
-			expect(result.content).toContain('**Title**:');
-			expect(result.content).toContain('**State**:');
-			expect(result.content).toContain('**Author**:');
-			expect(result.content).toContain('**Created**:');
-		}, 30000);
-
-		it('should handle errors for non-existent pull requests', async () => {
-			if (skipIfNoCredentials()) return;
-
-			const repoInfo = await getRepositoryInfo();
-			if (!repoInfo) {
-				console.warn('Skipping test: No repository info found.');
-				return;
-			}
-
-			// Use a PR ID that is very unlikely to exist
-			const nonExistentPrId = '999999999';
-
-			await expect(
-				atlassianPullRequestsController.get({
-					workspaceSlug: repoInfo.workspaceSlug,
-					repoSlug: repoInfo.repoSlug,
-					prId: nonExistentPrId,
-					includeFullDiff: false,
-					includeComments: false,
-				}),
-			).rejects.toThrow(McpError);
-
-			// Test that the error has the right status code and type
-			try {
-				await atlassianPullRequestsController.get({
-					workspaceSlug: repoInfo.workspaceSlug,
-					repoSlug: repoInfo.repoSlug,
-					prId: nonExistentPrId,
-					includeFullDiff: false,
-					includeComments: false,
-				});
-			} catch (error) {
-				expect(error).toBeInstanceOf(McpError);
-				expect((error as McpError).statusCode).toBe(404);
-				expect((error as McpError).message).toContain('not found');
-			}
-		}, 30000);
-
-		it('should require all necessary parameters', async () => {
-			if (skipIfNoCredentials()) return;
-
-			// No parameters should throw
-			await expect(
-				atlassianPullRequestsController.get({} as any),
-			).rejects.toThrow();
-
-			// Missing PR ID should throw
-			const repoInfo = await getRepositoryInfo();
-			if (repoInfo) {
-				await expect(
-					atlassianPullRequestsController.get({
-						workspaceSlug: repoInfo.workspaceSlug,
-						repoSlug: repoInfo.repoSlug,
-						// prId: missing
-					} as any),
-				).rejects.toThrow();
-			}
-		}, 10000);
-	});
+	// Note: 'get' functionality has been replaced by the generic bb_get tool
+	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
 
 	// List comments tests
 	describe('listComments', () => {

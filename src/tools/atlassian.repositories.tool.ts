@@ -4,32 +4,21 @@ import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	ListRepositoriesToolArgs,
 	type ListRepositoriesToolArgsType,
-	GetRepositoryToolArgs,
-	type GetRepositoryToolArgsType,
-	GetCommitHistoryToolArgs,
-	type GetCommitHistoryToolArgsType,
 	CreateBranchToolArgsSchema,
 	type CreateBranchToolArgsType,
 	CloneRepositoryToolArgs,
 	type CloneRepositoryToolArgsType,
-	GetFileContentToolArgs,
-	type GetFileContentToolArgsType,
 	ListBranchesToolArgs,
 	type ListBranchesToolArgsType,
 } from './atlassian.repositories.types.js';
 
 // Import directly from specialized controllers
 import { handleRepositoriesList } from '../controllers/atlassian.repositories.list.controller.js';
-import { handleRepositoryDetails } from '../controllers/atlassian.repositories.details.controller.js';
-import { handleCommitHistory } from '../controllers/atlassian.repositories.commit.controller.js';
 import {
 	handleCreateBranch,
 	handleListBranches,
 } from '../controllers/atlassian.repositories.branch.controller.js';
-import {
-	handleCloneRepository,
-	handleGetFileContent,
-} from '../controllers/atlassian.repositories.content.controller.js';
+import { handleCloneRepository } from '../controllers/atlassian.repositories.content.controller.js';
 
 // Create a contextualized logger for this file
 const toolLogger = Logger.forContext('tools/atlassian.repositories.tool.ts');
@@ -74,82 +63,6 @@ async function listRepositories(args: Record<string, unknown>) {
 		};
 	} catch (error) {
 		methodLogger.error('Failed to list repositories', error);
-		return formatErrorForMcpTool(error);
-	}
-}
-
-/**
- * MCP Tool: Get Bitbucket Repository Details
- *
- * Retrieves detailed information about a specific Bitbucket repository.
- * Returns a formatted markdown response with repository metadata.
- *
- * @param args - Tool arguments containing the workspace and repository slug
- * @returns MCP response with formatted repository details
- * @throws Will return error message if repository retrieval fails
- */
-async function getRepository(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.repositories.tool.ts',
-		'getRepository',
-	);
-	methodLogger.debug('Getting repository details:', args);
-
-	try {
-		// Pass args directly to controller
-		const result = await handleRepositoryDetails(
-			args as GetRepositoryToolArgsType,
-		);
-
-		methodLogger.debug(
-			'Successfully retrieved repository details from controller',
-		);
-
-		return {
-			content: [
-				{
-					type: 'text' as const,
-					text: result.content,
-				},
-			],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to get repository details', error);
-		return formatErrorForMcpTool(error);
-	}
-}
-
-/**
- * MCP Tool: Get Bitbucket Commit History
- *
- * Retrieves the commit history for a specific repository.
- *
- * @param args Tool arguments including workspace/repo slugs and optional filters.
- * @returns MCP response with formatted commit history.
- * @throws Will return error message if history retrieval fails.
- */
-async function handleGetCommitHistory(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.repositories.tool.ts',
-		'handleGetCommitHistory',
-	);
-	methodLogger.debug('Getting commit history with args:', args);
-
-	try {
-		// Pass args directly to controller
-		const result = await handleCommitHistory(
-			args as GetCommitHistoryToolArgsType,
-		);
-
-		methodLogger.debug(
-			'Successfully retrieved commit history from controller',
-		);
-
-		return {
-			content: [{ type: 'text' as const, text: result.content }],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to get commit history', error);
 		return formatErrorForMcpTool(error);
 	}
 }
@@ -204,36 +117,6 @@ async function handleRepoClone(args: Record<string, unknown>) {
 		};
 	} catch (error) {
 		methodLogger.error('Failed to clone repository', error);
-		return formatErrorForMcpTool(error);
-	}
-}
-
-/**
- * Handler for getting file content.
- */
-async function getFileContent(args: Record<string, unknown>) {
-	const methodLogger = toolLogger.forMethod('getFileContent');
-	try {
-		methodLogger.debug('Getting file content:', args);
-
-		// Map tool args to controller args
-		const typedArgs = args as GetFileContentToolArgsType;
-		const result = await handleGetFileContent({
-			workspaceSlug: typedArgs.workspaceSlug,
-			repoSlug: typedArgs.repoSlug,
-			path: typedArgs.filePath,
-			ref: typedArgs.revision,
-		});
-
-		methodLogger.debug(
-			'Successfully retrieved file content via controller',
-		);
-
-		return {
-			content: [{ type: 'text' as const, text: result.content }],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to get file content', error);
 		return formatErrorForMcpTool(error);
 	}
 }
@@ -295,21 +178,11 @@ function registerTools(server: McpServer) {
 		listRepositories,
 	);
 
-	// Register the get repository details tool
-	server.tool(
-		'bb_get_repo',
-		`Retrieves detailed information for a specific repository identified by \`workspaceSlug\` and \`repoSlug\`. Returns comprehensive repository details as formatted Markdown, including owner, main branch, comment/task counts, recent pull requests, and relevant links. Requires Bitbucket credentials.`,
-		GetRepositoryToolArgs.shape,
-		getRepository,
-	);
+	// Note: bb_get_repo has been replaced by the generic bb_get tool
+	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}" })
 
-	// Register the get commit history tool
-	server.tool(
-		'bb_get_commit_history',
-		`Retrieves the commit history for a repository identified by \`workspaceSlug\` and \`repoSlug\`. Supports pagination via \`limit\` (number of commits per page) and \`cursor\` (which acts as the page number for this endpoint). Optionally filters history starting from a specific branch, tag, or commit hash using \`revision\`, or shows only commits affecting a specific file using \`path\`. Returns the commit history as formatted Markdown, including commit hash, author, date, and message. Pagination details are included at the end of the text content. Requires Bitbucket credentials to be configured.`,
-		GetCommitHistoryToolArgs.shape,
-		handleGetCommitHistory,
-	);
+	// Note: bb_get_commit_history has been replaced by the generic bb_get tool
+	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/commits" })
 
 	// Add the new branch tool
 	server.tool(
@@ -354,13 +227,8 @@ bb_clone_repo({workspaceSlug: "my-team", repoSlug: "api-service", targetPath: ".
 		handleRepoClone,
 	);
 
-	// Register the get file content tool
-	server.tool(
-		'bb_get_file',
-		`Retrieves the content of a file from a Bitbucket repository identified by \`workspaceSlug\` and \`repoSlug\`. Specify the file to retrieve using the \`filePath\` parameter. Optionally, you can specify a \`revision\` (branch name, tag, or commit hash) to retrieve the file from - if omitted, the repository's default branch is used. Returns the raw content of the file as text. Requires Bitbucket credentials.`,
-		GetFileContentToolArgs.shape,
-		getFileContent,
-	);
+	// Note: bb_get_file has been replaced by the generic bb_get tool
+	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/src/{commit}/{path}" })
 
 	// Register the list branches tool
 	server.tool(

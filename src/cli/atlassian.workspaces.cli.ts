@@ -5,7 +5,8 @@ import atlassianWorkspacesController from '../controllers/atlassian.workspaces.c
 
 /**
  * CLI module for managing Bitbucket workspaces.
- * Provides commands for listing workspaces and retrieving workspace details.
+ * Provides commands for listing workspaces.
+ * Note: Get workspace details is available via the generic 'get' command.
  * All commands require valid Atlassian credentials.
  */
 
@@ -29,7 +30,6 @@ function register(program: Command): void {
 	methodLogger.debug('Registering Bitbucket Workspaces CLI commands...');
 
 	registerListWorkspacesCommand(program);
-	registerGetWorkspaceCommand(program);
 
 	methodLogger.debug('CLI commands registered successfully');
 }
@@ -67,49 +67,6 @@ function registerListWorkspacesCommand(program: Command): void {
 				// Call controller directly
 				const result =
 					await atlassianWorkspacesController.list(controllerOptions);
-
-				console.log(result.content);
-			} catch (error) {
-				actionLogger.error('Operation failed:', error);
-				handleCliError(error);
-			}
-		});
-}
-
-/**
- * Register the command for retrieving a specific Bitbucket workspace
- *
- * @param program - The Commander program instance
- */
-function registerGetWorkspaceCommand(program: Command): void {
-	program
-		.command('get-workspace')
-		.description(
-			'Get detailed information about a specific Bitbucket workspace. Returns raw JSON.',
-		)
-		.requiredOption(
-			'-w, --workspace-slug <slug>',
-			'Workspace slug to retrieve. Must be a valid workspace slug from your Bitbucket account. Example: "myteam"',
-		)
-		.option(
-			'--jq <expression>',
-			'JMESPath expression to filter/transform the JSON response. Examples: "name", "links.html.href", "{name: name, slug: slug}"',
-		)
-		.action(async (options) => {
-			const actionLogger = Logger.forContext(
-				'cli/atlassian.workspaces.cli.ts',
-				'get-workspace',
-			);
-			try {
-				actionLogger.debug(
-					`Fetching workspace: ${options.workspaceSlug}`,
-				);
-
-				// Call controller directly with passed options
-				const result = await atlassianWorkspacesController.get({
-					workspaceSlug: options.workspaceSlug,
-					jq: options.jq,
-				});
 
 				console.log(result.content);
 			} catch (error) {
