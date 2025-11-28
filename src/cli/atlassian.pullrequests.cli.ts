@@ -28,8 +28,6 @@ function register(program: Command): void {
 	methodLogger.debug('Registering Bitbucket Pull Requests CLI commands...');
 
 	registerListPullRequestsCommand(program);
-	// Note: get-pr has been replaced by the generic 'get' command
-	// Use: get --path "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}"
 	registerListPullRequestCommentsCommand(program);
 	registerAddPullRequestCommentCommand(program);
 	registerAddPullRequestCommand(program);
@@ -115,9 +113,6 @@ function registerListPullRequestsCommand(program: Command): void {
 			}
 		});
 }
-
-// Note: registerGetPullRequestCommand has been replaced by the generic 'get' command
-// Use: get --path "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}"
 
 /**
  * Register the command for listing comments on a Bitbucket pull request

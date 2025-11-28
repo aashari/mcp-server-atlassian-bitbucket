@@ -291,6 +291,5 @@ describe('Atlassian Repositories CLI Commands', () => {
 		}, 30000);
 	});
 
-	// Note: 'get-repo' command has been replaced by the generic 'get' command
 	// Use: get --path "/repositories/{workspace}/{repo_slug}"
 });

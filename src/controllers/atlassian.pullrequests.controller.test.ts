@@ -350,9 +350,6 @@ describe('Atlassian Pull Requests Controller', () => {
 		}, 10000);
 	});
 
-	// Note: 'get' functionality has been replaced by the generic bb_get tool
-	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
-
 	// List comments tests
 	describe('listComments', () => {
 		it('should return formatted pull request comments in Markdown', async () => {

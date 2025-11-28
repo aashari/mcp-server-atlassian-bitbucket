@@ -315,7 +315,4 @@ describe('Atlassian Repositories Controller', () => {
 			}
 		}, 30000);
 	});
-
-	// Note: 'get' functionality (repository details, commit history, file content) has been replaced by the generic bb_get tool
-	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}" })
 });

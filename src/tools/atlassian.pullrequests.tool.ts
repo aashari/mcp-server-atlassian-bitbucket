@@ -242,15 +242,6 @@ async function rejectPullRequest(args: Record<string, unknown>) {
  * Registers the pull requests-related tools with the MCP server.
  * Each tool is registered with its schema, description, and handler function.
  *
- * NOTE: bb_ls_prs has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests" })
- *
- * NOTE: bb_ls_pr_comments has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}/comments" })
- *
- * NOTE: bb_get_pr has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
- *
  * @param server - The MCP server instance to register tools with
  */
 function registerTools(server: McpServer) {

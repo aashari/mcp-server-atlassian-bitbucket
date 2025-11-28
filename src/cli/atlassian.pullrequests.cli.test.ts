@@ -212,7 +212,6 @@ describe('Atlassian Pull Requests CLI Commands', () => {
 		}, 30000);
 	});
 
-	// Note: 'get-pr' command has been replaced by the generic 'get' command
 	// Use: get --path "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}"
 
 	describe('ls-pr-comments command', () => {

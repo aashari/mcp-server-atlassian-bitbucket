@@ -45,3 +45,46 @@ export const GetApiToolArgs = z.object({
 });
 
 export type GetApiToolArgsType = z.infer<typeof GetApiToolArgs>;
+
+/**
+ * Schema for generic bb_post tool arguments
+ * Allows AI to call any Bitbucket POST endpoint directly
+ */
+export const PostApiToolArgs = z.object({
+	/**
+	 * The API endpoint path (without base URL)
+	 */
+	path: z
+		.string()
+		.min(1, 'Path is required')
+		.describe(
+			'The Bitbucket API endpoint path (without base URL). Must start with "/". Examples: "/repositories/{workspace}/{repo}/pullrequests", "/repositories/{workspace}/{repo}/pullrequests/{id}/comments"',
+		),
+
+	/**
+	 * Request body as JSON object
+	 */
+	body: z
+		.record(z.unknown())
+		.describe(
+			'Request body as a JSON object. Structure depends on the endpoint. Example for PR: {"title": "My PR", "source": {"branch": {"name": "feature"}}}',
+		),
+
+	/**
+	 * Optional query parameters as key-value pairs
+	 */
+	queryParams: z
+		.record(z.string())
+		.optional()
+		.describe('Optional query parameters as key-value pairs.'),
+
+	/**
+	 * Optional JMESPath expression to filter/transform the response
+	 */
+	jq: z
+		.string()
+		.optional()
+		.describe('JMESPath expression to filter/transform the JSON response.'),
+});
+
+export type PostApiToolArgsType = z.infer<typeof PostApiToolArgs>;

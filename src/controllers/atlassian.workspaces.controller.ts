@@ -23,7 +23,6 @@ controllerLogger.debug('Bitbucket workspaces controller initialized');
 /**
  * Controller for managing Bitbucket workspaces.
  * Provides functionality for listing workspaces.
- * Note: Get workspace details is handled by the generic bb_get tool.
  */
 
 /**

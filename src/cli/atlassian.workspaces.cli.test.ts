@@ -103,6 +103,5 @@ describe('Atlassian Workspaces CLI Commands', () => {
 		}, 30000);
 	});
 
-	// Note: 'get-workspace' command has been replaced by the generic 'get' command
 	// Use: get --path "/workspaces/{workspace_slug}"
 });

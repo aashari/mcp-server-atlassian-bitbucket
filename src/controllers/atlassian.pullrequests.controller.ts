@@ -10,8 +10,6 @@ import {
 } from '../tools/atlassian.pullrequests.types.js';
 
 import listController from './atlassian.pullrequests.list.controller.js';
-// Note: getController replaced by the generic bb_get tool
-// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
 import commentsController from './atlassian.pullrequests.comments.controller.js';
 import createController from './atlassian.pullrequests.create.controller.js';
 import updateController from './atlassian.pullrequests.update.controller.js';
@@ -20,7 +18,7 @@ import rejectController from './atlassian.pullrequests.reject.controller.js';
 
 /**
  * Controller for managing Bitbucket pull requests.
- * Provides functionality for listing, retrieving, and creating pull requests and comments.
+ * Provides functionality for listing pull requests, managing comments, and basic PR workflows.
  *
  * NOTE ON MARKDOWN HANDLING:
  * Unlike Jira (which uses ADF) or Confluence (which uses a mix of formats),
@@ -45,9 +43,6 @@ async function list(
 ): Promise<ControllerResponse> {
 	return listController.list(options);
 }
-
-// Note: get() function replaced by the generic bb_get tool
-// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
 
 /**
  * List comments on a Bitbucket pull request
@@ -116,7 +111,6 @@ async function reject(
 }
 
 // Export the controller functions
-// Note: get() replaced by the generic bb_get tool
 export default {
 	list,
 	listComments,

@@ -9,21 +9,13 @@ toolLogger.debug('Bitbucket workspaces tool initialized');
 
 /**
  * Register all Bitbucket workspace tools with the MCP server.
- *
- * NOTE: bb_ls_workspaces has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/user/permissions/workspaces" })
- *
- * NOTE: bb_get_workspace has been replaced by the generic bb_get tool.
- * Use: bb_get({ path: "/workspaces/{workspace_slug}" })
  */
 function registerTools(_server: McpServer) {
 	const registerLogger = Logger.forContext(
 		'tools/atlassian.workspaces.tool.ts',
 		'registerTools',
 	);
-	registerLogger.debug(
-		'Workspaces tools deprecated - use bb_get instead. No tools to register.',
-	);
+	registerLogger.debug('No workspace tools to register.');
 }
 
 export default { registerTools };

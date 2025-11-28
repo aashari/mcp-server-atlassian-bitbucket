@@ -89,7 +89,4 @@ describe('Atlassian Workspaces Controller', () => {
 			}
 		}, 30000);
 	});
-
-	// Note: 'get' functionality has been replaced by the generic bb_get tool
-	// Use: bb_get({ path: "/workspaces/{workspace_slug}" })
 });
