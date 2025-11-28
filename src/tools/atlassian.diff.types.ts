@@ -1,6 +1,24 @@
 import { z } from 'zod';
 
 /**
+ * Diff tool types.
+ *
+ * NOTE: BranchDiffArgsSchema MCP tool has been deprecated.
+ * The bb_diff_branches tool has been replaced by the generic bb_get tool.
+ * Use two separate calls:
+ * - Diffstat: bb_get({ path: "/repositories/{workspace}/{repo_slug}/diffstat/{dest}..{source}" })
+ * - Raw diff: bb_get({ path: "/repositories/{workspace}/{repo_slug}/diff/{dest}..{source}" })
+ *
+ * NOTE: CommitDiffArgsSchema MCP tool has been deprecated.
+ * The bb_diff_commits tool has been replaced by the generic bb_get tool.
+ * Use two separate calls:
+ * - Diffstat: bb_get({ path: "/repositories/{workspace}/{repo_slug}/diffstat/{since}..{until}" })
+ * - Raw diff: bb_get({ path: "/repositories/{workspace}/{repo_slug}/diff/{since}..{until}" })
+ *
+ * These schemas are kept for backwards compatibility with the CLI and controller.
+ */
+
+/**
  * Schema for the branch diff tool arguments
  */
 export const BranchDiffArgsSchema = z.object({
