@@ -1,3 +1,41 @@
+# [2.0.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.45.0...v2.0.0) (2025-11-28)
+
+
+* feat!: replace 20+ specific tools with 6 generic HTTP method tools ([d269cdb](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/d269cdbcb484f7691b4e925ad9746f6cb3b70187))
+
+
+### BREAKING CHANGES
+
+* This release removes all specific Bitbucket tools and replaces them with generic HTTP method tools.
+
+Removed tools:
+- bb_ls_workspaces, bb_get_workspace
+- bb_ls_repos, bb_get_repo
+- bb_list_branches, bb_add_branch
+- bb_get_commit_history, bb_get_file
+- bb_ls_prs, bb_get_pr, bb_add_pr, bb_update_pr
+- bb_approve_pr, bb_reject_pr
+- bb_ls_pr_comments, bb_add_pr_comment
+- bb_diff_branches, bb_diff_commits
+- bb_search
+
+New tools:
+- bb_get: GET any Bitbucket API endpoint
+- bb_post: POST to any endpoint (create resources)
+- bb_put: PUT to any endpoint (replace resources)
+- bb_patch: PATCH any endpoint (partial updates)
+- bb_delete: DELETE any endpoint
+- bb_clone: Clone repository locally (unchanged)
+
+Migration: Replace specific tool calls with generic bb_get/bb_post calls.
+Example: bb_ls_prs -> bb_get with path "/repositories/{workspace}/{repo}/pullrequests"
+
+Benefits:
+- 6 tools vs 20+ (lower token consumption)
+- Raw JSON output with optional JMESPath filtering
+- Future-proof: new API endpoints work without code changes
+- ~14,000 fewer lines of code
+
 # [1.45.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.44.2...v1.45.0) (2025-10-05)
 
 
