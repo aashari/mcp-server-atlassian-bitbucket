@@ -83,7 +83,7 @@
     "nodemon": "^3.1.10",
     "npm-check-updates": "^18.1.0",
     "prettier": "^3.6.2",
-    "semantic-release": "^24.2.7",
+    "semantic-release": "^25.0.2",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
