@@ -111,4 +111,60 @@ export class CliTestUtil {
 			true,
 		);
 	}
+
+	/**
+	 * Extracts and parses JSON from CLI output
+	 * Handles output that may contain log lines before the JSON
+	 *
+	 * @param output - The CLI output string
+	 * @returns Parsed JSON object or null if no valid JSON found
+	 */
+	static extractJsonFromOutput(
+		output: string,
+	): Record<string, unknown> | null {
+		// Split by newlines and find lines that could be start of JSON
+		const lines = output.split('\n');
+		let jsonStartIndex = -1;
+
+		// Find the first line that starts with '{' (the actual JSON output)
+		for (let i = 0; i < lines.length; i++) {
+			const trimmed = lines[i].trim();
+			if (trimmed.startsWith('{') && !trimmed.includes('[')) {
+				// This looks like start of JSON, not a log line with timestamp
+				jsonStartIndex = i;
+				break;
+			}
+		}
+
+		if (jsonStartIndex === -1) {
+			return null;
+		}
+
+		// Join from the JSON start to the end
+		const jsonStr = lines.slice(jsonStartIndex).join('\n');
+
+		try {
+			return JSON.parse(jsonStr);
+		} catch {
+			// Try to find the matching closing brace
+			let braceCount = 0;
+			let endIndex = 0;
+			for (let i = 0; i < jsonStr.length; i++) {
+				if (jsonStr[i] === '{') braceCount++;
+				if (jsonStr[i] === '}') braceCount--;
+				if (braceCount === 0) {
+					endIndex = i + 1;
+					break;
+				}
+			}
+			if (endIndex > 0) {
+				try {
+					return JSON.parse(jsonStr.substring(0, endIndex));
+				} catch {
+					return null;
+				}
+			}
+			return null;
+		}
+	}
 }

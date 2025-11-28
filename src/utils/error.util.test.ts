@@ -124,7 +124,7 @@ describe('Error Utilities', () => {
 	});
 
 	describe('formatErrorForMcpTool function', () => {
-		test('formats an McpError for MCP tool response', () => {
+		test('formats an McpError for MCP tool response with raw error details', () => {
 			const originalError = {
 				code: 'NOT_FOUND',
 				message: 'Repository does not exist',
@@ -138,13 +138,20 @@ describe('Error Utilities', () => {
 			const formatted = formatErrorForMcpTool(error);
 
 			expect(formatted).toHaveProperty('content');
+			expect(formatted).toHaveProperty('isError', true);
 			expect(formatted.content[0].type).toBe('text');
-			expect(formatted.content[0].text).toBe('Error: Resource not found');
-
-			expect(formatted).toHaveProperty('metadata');
-			expect(formatted.metadata?.errorType).toBe(ErrorType.API_ERROR);
-			expect(formatted.metadata?.statusCode).toBe(404);
-			expect(formatted.metadata?.errorDetails).toEqual(originalError);
+			// Should contain the error message
+			expect(formatted.content[0].text).toContain(
+				'Error: Resource not found',
+			);
+			// Should contain HTTP status
+			expect(formatted.content[0].text).toContain('HTTP Status: 404');
+			// Should contain raw API response with original error details
+			expect(formatted.content[0].text).toContain('Raw API Response:');
+			expect(formatted.content[0].text).toContain('NOT_FOUND');
+			expect(formatted.content[0].text).toContain(
+				'Repository does not exist',
+			);
 		});
 
 		test('formats a non-McpError for MCP tool response', () => {
@@ -153,12 +160,10 @@ describe('Error Utilities', () => {
 			const formatted = formatErrorForMcpTool(error);
 
 			expect(formatted).toHaveProperty('content');
+			expect(formatted).toHaveProperty('isError', true);
 			expect(formatted.content[0].type).toBe('text');
-			expect(formatted.content[0].text).toBe('Error: Standard error');
-
-			expect(formatted).toHaveProperty('metadata');
-			expect(formatted.metadata?.errorType).toBe(
-				ErrorType.UNEXPECTED_ERROR,
+			expect(formatted.content[0].text).toContain(
+				'Error: Standard error',
 			);
 		});
 
@@ -176,8 +181,10 @@ describe('Error Utilities', () => {
 
 			const formatted = formatErrorForMcpTool(topError);
 
-			expect(formatted.content[0].text).toBe('Error: API error');
-			expect(formatted.metadata?.errorDetails).toEqual(deepError);
+			expect(formatted.content[0].text).toContain('Error: API error');
+			// Should include the deep error details in raw response
+			expect(formatted.content[0].text).toContain('API quota exceeded');
+			expect(formatted.content[0].text).toContain('RateLimitError');
 		});
 	});
 

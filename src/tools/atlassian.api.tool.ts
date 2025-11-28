@@ -1,0 +1,247 @@
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Logger } from '../utils/logger.util.js';
+import { formatErrorForMcpTool } from '../utils/error.util.js';
+import {
+	GetApiToolArgs,
+	type GetApiToolArgsType,
+	RequestWithBodyArgs,
+	type RequestWithBodyArgsType,
+	DeleteApiToolArgs,
+} from './atlassian.api.types.js';
+import {
+	handleGet,
+	handlePost,
+	handlePut,
+	handlePatch,
+	handleDelete,
+} from '../controllers/atlassian.api.controller.js';
+
+// Create a contextualized logger for this file
+const toolLogger = Logger.forContext('tools/atlassian.api.tool.ts');
+
+// Log tool initialization
+toolLogger.debug('Bitbucket API tool initialized');
+
+/**
+ * Creates an MCP tool handler for GET/DELETE requests (no body)
+ *
+ * @param methodName - Name of the HTTP method for logging
+ * @param handler - Controller handler function
+ * @returns MCP tool handler function
+ */
+function createReadHandler(
+	methodName: string,
+	handler: (options: GetApiToolArgsType) => Promise<{ content: string }>,
+) {
+	return async (args: Record<string, unknown>) => {
+		const methodLogger = Logger.forContext(
+			'tools/atlassian.api.tool.ts',
+			methodName.toLowerCase(),
+		);
+		methodLogger.debug(`Making ${methodName} request with args:`, args);
+
+		try {
+			const result = await handler(args as GetApiToolArgsType);
+
+			methodLogger.debug(
+				'Successfully retrieved response from controller',
+			);
+
+			return {
+				content: [
+					{
+						type: 'text' as const,
+						text: result.content,
+					},
+				],
+			};
+		} catch (error) {
+			methodLogger.error(`Failed to make ${methodName} request`, error);
+			return formatErrorForMcpTool(error);
+		}
+	};
+}
+
+/**
+ * Creates an MCP tool handler for POST/PUT/PATCH requests (with body)
+ *
+ * @param methodName - Name of the HTTP method for logging
+ * @param handler - Controller handler function
+ * @returns MCP tool handler function
+ */
+function createWriteHandler(
+	methodName: string,
+	handler: (options: RequestWithBodyArgsType) => Promise<{ content: string }>,
+) {
+	return async (args: Record<string, unknown>) => {
+		const methodLogger = Logger.forContext(
+			'tools/atlassian.api.tool.ts',
+			methodName.toLowerCase(),
+		);
+		methodLogger.debug(`Making ${methodName} request with args:`, {
+			path: args.path,
+			bodyKeys: args.body ? Object.keys(args.body as object) : [],
+		});
+
+		try {
+			const result = await handler(args as RequestWithBodyArgsType);
+
+			methodLogger.debug(
+				'Successfully received response from controller',
+			);
+
+			return {
+				content: [
+					{
+						type: 'text' as const,
+						text: result.content,
+					},
+				],
+			};
+		} catch (error) {
+			methodLogger.error(`Failed to make ${methodName} request`, error);
+			return formatErrorForMcpTool(error);
+		}
+	};
+}
+
+// Create tool handlers
+const get = createReadHandler('GET', handleGet);
+const post = createWriteHandler('POST', handlePost);
+const put = createWriteHandler('PUT', handlePut);
+const patch = createWriteHandler('PATCH', handlePatch);
+const del = createReadHandler('DELETE', handleDelete);
+
+/**
+ * Register generic Bitbucket API tools with the MCP server.
+ */
+function registerTools(server: McpServer) {
+	const registerLogger = Logger.forContext(
+		'tools/atlassian.api.tool.ts',
+		'registerTools',
+	);
+	registerLogger.debug('Registering API tools...');
+
+	// Register the GET tool
+	server.tool(
+		'bb_get',
+		`Read any Bitbucket data. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+
+**Common paths:**
+- \`/workspaces\` - list workspaces
+- \`/repositories/{workspace}\` - list repos in workspace
+- \`/repositories/{workspace}/{repo}\` - get repo details
+- \`/repositories/{workspace}/{repo}/pullrequests\` - list PRs
+- \`/repositories/{workspace}/{repo}/pullrequests/{id}\` - get PR details
+- \`/repositories/{workspace}/{repo}/pullrequests/{id}/comments\` - list PR comments
+- \`/repositories/{workspace}/{repo}/pullrequests/{id}/diff\` - get PR diff
+- \`/repositories/{workspace}/{repo}/refs/branches\` - list branches
+- \`/repositories/{workspace}/{repo}/commits\` - list commits
+- \`/repositories/{workspace}/{repo}/src/{commit}/{filepath}\` - get file content
+- \`/repositories/{workspace}/{repo}/diff/{source}..{destination}\` - compare branches/commits
+
+**Query params:** \`pagelen\` (page size), \`page\` (page number), \`q\` (filter), \`sort\` (order), \`fields\` (sparse response)
+
+**Example filters (q param):** \`state="OPEN"\`, \`source.branch.name="feature"\`, \`title~"bug"\`
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		GetApiToolArgs.shape,
+		get,
+	);
+
+	// Register the POST tool
+	server.tool(
+		'bb_post',
+		`Create Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+
+**Common operations:**
+
+1. **Create PR:** \`/repositories/{workspace}/{repo}/pullrequests\`
+   body: \`{"title": "...", "source": {"branch": {"name": "feature"}}, "destination": {"branch": {"name": "main"}}}\`
+
+2. **Add PR comment:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/comments\`
+   body: \`{"content": {"raw": "Comment text"}}\`
+
+3. **Approve PR:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/approve\`
+   body: \`{}\`
+
+4. **Request changes:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/request-changes\`
+   body: \`{}\`
+
+5. **Merge PR:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/merge\`
+   body: \`{"merge_strategy": "squash"}\` (strategies: merge_commit, squash, fast_forward)
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		RequestWithBodyArgs.shape,
+		post,
+	);
+
+	// Register the PUT tool
+	server.tool(
+		'bb_put',
+		`Replace Bitbucket resources (full update). Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+
+**Common operations:**
+
+1. **Update repository:** \`/repositories/{workspace}/{repo}\`
+   body: \`{"description": "...", "is_private": true, "has_issues": true}\`
+
+2. **Create/update file:** \`/repositories/{workspace}/{repo}/src\`
+   Note: Use multipart form data for file uploads (complex - prefer PATCH for metadata)
+
+3. **Update branch restriction:** \`/repositories/{workspace}/{repo}/branch-restrictions/{id}\`
+   body: \`{"kind": "push", "pattern": "main", "users": [{"uuid": "..."}]}\`
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		RequestWithBodyArgs.shape,
+		put,
+	);
+
+	// Register the PATCH tool
+	server.tool(
+		'bb_patch',
+		`Partially update Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+
+**Common operations:**
+
+1. **Update PR title/description:** \`/repositories/{workspace}/{repo}/pullrequests/{id}\`
+   body: \`{"title": "New title", "description": "Updated description"}\`
+
+2. **Update PR reviewers:** \`/repositories/{workspace}/{repo}/pullrequests/{id}\`
+   body: \`{"reviewers": [{"uuid": "{user-uuid}"}]}\`
+
+3. **Update repository properties:** \`/repositories/{workspace}/{repo}\`
+   body: \`{"description": "New description"}\`
+
+4. **Update comment:** \`/repositories/{workspace}/{repo}/pullrequests/{pr_id}/comments/{comment_id}\`
+   body: \`{"content": {"raw": "Updated comment"}}\`
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		RequestWithBodyArgs.shape,
+		patch,
+	);
+
+	// Register the DELETE tool
+	server.tool(
+		'bb_delete',
+		`Delete Bitbucket resources. Returns JSON (if any), optionally filtered with JMESPath (\`jq\` param).
+
+**Common operations:**
+
+1. **Delete branch:** \`/repositories/{workspace}/{repo}/refs/branches/{branch_name}\`
+2. **Delete PR comment:** \`/repositories/{workspace}/{repo}/pullrequests/{pr_id}/comments/{comment_id}\`
+3. **Decline PR:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/decline\`
+4. **Remove PR approval:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/approve\`
+5. **Delete repository:** \`/repositories/{workspace}/{repo}\` (caution: irreversible)
+
+Note: Most DELETE endpoints return 204 No Content on success.
+
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		DeleteApiToolArgs.shape,
+		del,
+	);
+
+	registerLogger.debug('Successfully registered API tools');
+}
+
+export default { registerTools };

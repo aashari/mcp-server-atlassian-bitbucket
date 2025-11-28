@@ -165,14 +165,11 @@ export function ensureMcpError(error: unknown): McpError {
 
 /**
  * Format error for MCP tool response
+ * Includes raw error details in the text content so AI can see the full context
  */
 export function formatErrorForMcpTool(error: unknown): {
 	content: Array<{ type: 'text'; text: string }>;
-	metadata?: {
-		errorType: ErrorType;
-		statusCode?: number;
-		errorDetails?: unknown;
-	};
+	isError: boolean;
 } {
 	const methodLogger = Logger.forContext(
 		'utils/error.util.ts',
@@ -184,24 +181,31 @@ export function formatErrorForMcpTool(error: unknown): {
 	// Get the deep original error for additional context
 	const originalError = getDeepOriginalError(mcpError.originalError);
 
-	// Safely extract details from the original error
-	const errorDetails =
-		originalError instanceof Error
-			? { message: originalError.message }
-			: originalError;
+	// Build error text with full details visible to AI
+	let errorText = `Error: ${mcpError.message}`;
+
+	// Add status code if available
+	if (mcpError.statusCode) {
+		errorText += `\nHTTP Status: ${mcpError.statusCode}`;
+	}
+
+	// Add raw error details if available (this is the actual Bitbucket API response)
+	if (originalError && originalError !== mcpError.message) {
+		if (typeof originalError === 'object') {
+			errorText += `\n\nRaw API Response:\n${JSON.stringify(originalError, null, 2)}`;
+		} else if (typeof originalError === 'string') {
+			errorText += `\n\nRaw API Response:\n${originalError}`;
+		}
+	}
 
 	return {
 		content: [
 			{
 				type: 'text' as const,
-				text: `Error: ${mcpError.message}`,
+				text: errorText,
 			},
 		],
-		metadata: {
-			errorType: mcpError.type,
-			statusCode: mcpError.statusCode,
-			errorDetails,
-		},
+		isError: true,
 	};
 }
 

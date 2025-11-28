@@ -72,7 +72,7 @@ npx -y @aashari/mcp-server-atlassian-bitbucket ls-workspaces
 npx -y @aashari/mcp-server-atlassian-bitbucket ls-repos --workspace-slug your-workspace
 
 # Get details about a specific repository  
-npx -y @aashari/mcp-server-atlassian-bitbucket get-repo --workspace-slug your-workspace --repo-slug your-repo
+npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/your-workspace/your-repo" --jq "{name: name, default_branch: mainbranch.name}"
 ```
 
 ## Connect to AI Assistants
