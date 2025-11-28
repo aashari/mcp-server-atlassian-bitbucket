@@ -85,11 +85,15 @@ function registerGetWorkspaceCommand(program: Command): void {
 	program
 		.command('get-workspace')
 		.description(
-			'Get detailed information about a specific Bitbucket workspace.',
+			'Get detailed information about a specific Bitbucket workspace. Returns raw JSON.',
 		)
 		.requiredOption(
 			'-w, --workspace-slug <slug>',
 			'Workspace slug to retrieve. Must be a valid workspace slug from your Bitbucket account. Example: "myteam"',
+		)
+		.option(
+			'--jq <expression>',
+			'JMESPath expression to filter/transform the JSON response. Examples: "name", "links.html.href", "{name: name, slug: slug}"',
 		)
 		.action(async (options) => {
 			const actionLogger = Logger.forContext(
@@ -104,6 +108,7 @@ function registerGetWorkspaceCommand(program: Command): void {
 				// Call controller directly with passed options
 				const result = await atlassianWorkspacesController.get({
 					workspaceSlug: options.workspaceSlug,
+					jq: options.jq,
 				});
 
 				console.log(result.content);

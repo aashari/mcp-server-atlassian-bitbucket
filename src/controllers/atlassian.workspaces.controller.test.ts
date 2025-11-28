@@ -117,7 +117,7 @@ describe('Atlassian Workspaces Controller', () => {
 			}
 		}
 
-		it('should return formatted details for a valid workspace slug in Markdown', async () => {
+		it('should return raw JSON for a valid workspace slug', async () => {
 			const workspaceSlug = await getFirstWorkspaceSlugForController();
 			if (!workspaceSlug) {
 				console.warn(
@@ -134,11 +134,12 @@ describe('Atlassian Workspaces Controller', () => {
 			expect(result).toHaveProperty('content');
 			expect(typeof result.content).toBe('string');
 
-			// Verify Markdown content
-			expect(result.content).toMatch(/^# Workspace:/m);
-			expect(result.content).toContain(`**Slug**: ${workspaceSlug}`);
-			expect(result.content).toContain('## Basic Information');
-			expect(result.content).toContain('## Links');
+			// Verify JSON content
+			const parsed = JSON.parse(result.content);
+			expect(parsed).toHaveProperty('slug', workspaceSlug);
+			expect(parsed).toHaveProperty('name');
+			expect(parsed).toHaveProperty('uuid');
+			expect(parsed).toHaveProperty('links');
 		}, 30000);
 
 		it('should throw McpError for an invalid workspace slug', async () => {

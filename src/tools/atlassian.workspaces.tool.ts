@@ -117,7 +117,7 @@ function registerTools(server: McpServer) {
 	// Register the get workspace details tool
 	server.tool(
 		'bb_get_workspace',
-		`Retrieves detailed information for a workspace identified by \`workspaceSlug\`. Returns comprehensive workspace details as formatted Markdown, including membership, projects, and key metadata. Requires Bitbucket credentials to be configured.`,
+		`Retrieves detailed information for a workspace identified by \`workspaceSlug\`. Returns raw JSON response from Bitbucket API. Use the optional \`jq\` parameter with a JMESPath expression to filter/transform the response (e.g., "name", "links.html.href", "{name: name, slug: slug}"). Requires Bitbucket credentials to be configured.`,
 		GetWorkspaceToolArgs.shape,
 		getWorkspace,
 	);

@@ -47,6 +47,16 @@ export const GetWorkspaceToolArgs = z.object({
 		.describe(
 			'Workspace slug to retrieve detailed information for. Must be a valid workspace slug from your Bitbucket account. Example: "myteam"',
 		),
+
+	/**
+	 * Optional JMESPath expression to filter the response
+	 */
+	jq: z
+		.string()
+		.optional()
+		.describe(
+			'JMESPath expression to filter/transform the JSON response. Examples: "name" (single field), "links.html.href" (nested field), "{name: name, slug: slug}" (multiple fields). See https://jmespath.org for syntax.',
+		),
 });
 
 export type GetWorkspaceToolArgsType = z.infer<typeof GetWorkspaceToolArgs>;

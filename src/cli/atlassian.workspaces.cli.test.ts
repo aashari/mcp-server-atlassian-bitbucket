@@ -105,7 +105,7 @@ describe('Atlassian Workspaces CLI Commands', () => {
 
 	describe('get-workspace command', () => {
 		// Test to fetch a specific workspace
-		it('should retrieve a specific workspace by slug', async () => {
+		it('should retrieve a specific workspace by slug as raw JSON', async () => {
 			if (skipIfNoCredentials()) {
 				return;
 			}
@@ -140,16 +140,13 @@ describe('Atlassian Workspaces CLI Commands', () => {
 			// Check command exit code
 			expect(getResult.exitCode).toBe(0);
 
-			// Verify the output structure and content
-			CliTestUtil.validateOutputContains(getResult.stdout, [
-				`# Workspace: `,
-				`**Slug**: ${workspaceSlug}`,
-				'Basic Information',
-				'Links',
-			]);
-
-			// Validate Markdown formatting
-			CliTestUtil.validateMarkdownOutput(getResult.stdout);
+			// Verify the output is valid JSON
+			const jsonOutput = CliTestUtil.extractJsonFromOutput(getResult.stdout);
+			expect(jsonOutput).not.toBeNull();
+			expect(jsonOutput).toHaveProperty('slug', workspaceSlug);
+			expect(jsonOutput).toHaveProperty('name');
+			expect(jsonOutput).toHaveProperty('uuid');
+			expect(jsonOutput).toHaveProperty('links');
 		}, 30000); // Increased timeout for API calls
 
 		// Test with missing required parameter
