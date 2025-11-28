@@ -3,10 +3,6 @@ import { z } from 'zod';
 import { Logger } from '../utils/logger.util.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
-	ListPullRequestsToolArgs,
-	type ListPullRequestsToolArgsType,
-	ListPullRequestCommentsToolArgs,
-	type ListPullRequestCommentsToolArgsType,
 	CreatePullRequestCommentToolArgs,
 	type CreatePullRequestCommentToolArgsType,
 	CreatePullRequestToolArgs,
@@ -25,88 +21,6 @@ const toolLogger = Logger.forContext('tools/atlassian.pullrequests.tool.ts');
 
 // Log tool initialization
 toolLogger.debug('Bitbucket pull requests tool initialized');
-
-/**
- * MCP Tool: List Bitbucket Pull Requests
- *
- * Lists pull requests for a specific repository with optional filtering.
- * Returns a formatted markdown response with pull request details.
- *
- * @param args - Tool arguments for filtering pull requests
- * @returns MCP response with formatted pull requests list
- * @throws Will return error message if pull request listing fails
- */
-async function listPullRequests(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.pullrequests.tool.ts',
-		'listPullRequests',
-	);
-	methodLogger.debug('Listing Bitbucket pull requests with filters:', args);
-
-	try {
-		// Pass args directly to controller without any logic
-		const result = await atlassianPullRequestsController.list(
-			args as ListPullRequestsToolArgsType,
-		);
-
-		methodLogger.debug(
-			'Successfully retrieved pull requests from controller',
-		);
-
-		return {
-			content: [
-				{
-					type: 'text' as const,
-					text: result.content,
-				},
-			],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to list pull requests', error);
-		return formatErrorForMcpTool(error);
-	}
-}
-
-/**
- * MCP Tool: List Bitbucket Pull Request Comments
- *
- * Lists comments for a specific pull request, including general comments and inline code comments.
- * Returns a formatted markdown response with comment details.
- *
- * @param args - Tool arguments containing workspace, repository, and PR identifiers
- * @returns MCP response with formatted pull request comments
- * @throws Will return error message if comment retrieval fails
- */
-async function listPullRequestComments(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.pullrequests.tool.ts',
-		'listPullRequestComments',
-	);
-	methodLogger.debug('Listing pull request comments:', args);
-
-	try {
-		// Pass args directly to controller
-		const result = await atlassianPullRequestsController.listComments(
-			args as ListPullRequestCommentsToolArgsType,
-		);
-
-		methodLogger.debug(
-			'Successfully retrieved pull request comments from controller',
-		);
-
-		return {
-			content: [
-				{
-					type: 'text' as const,
-					text: result.content,
-				},
-			],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to get pull request comments', error);
-		return formatErrorForMcpTool(error);
-	}
-}
 
 /**
  * MCP Tool: Add Bitbucket Pull Request Comment
@@ -328,6 +242,15 @@ async function rejectPullRequest(args: Record<string, unknown>) {
  * Registers the pull requests-related tools with the MCP server.
  * Each tool is registered with its schema, description, and handler function.
  *
+ * NOTE: bb_ls_prs has been replaced by the generic bb_get tool.
+ * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests" })
+ *
+ * NOTE: bb_ls_pr_comments has been replaced by the generic bb_get tool.
+ * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}/comments" })
+ *
+ * NOTE: bb_get_pr has been replaced by the generic bb_get tool.
+ * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
+ *
  * @param server - The MCP server instance to register tools with
  */
 function registerTools(server: McpServer) {
@@ -336,25 +259,6 @@ function registerTools(server: McpServer) {
 		'registerTools',
 	);
 	methodLogger.debug('Registering Atlassian Pull Requests tools...');
-
-	// Register the list pull requests tool
-	server.tool(
-		'bb_ls_prs',
-		`Lists pull requests within a repository (\`repoSlug\`). If \`workspaceSlug\` is not provided, the system will use your default workspace. Filters by \`state\` (OPEN, MERGED, DECLINED, SUPERSEDED) and supports text search via \`query\`. Supports pagination via \`limit\` and \`cursor\`. Pagination details are included at the end of the text content. Returns a formatted Markdown list with each PR's title, status, author, reviewers, and creation date. Requires Bitbucket credentials to be configured.`,
-		ListPullRequestsToolArgs.shape,
-		listPullRequests,
-	);
-
-	// Note: bb_get_pr has been replaced by the generic bb_get tool
-	// Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}" })
-
-	// Register the list pull request comments tool
-	server.tool(
-		'bb_ls_pr_comments',
-		`Lists comments on a specific pull request identified by \`prId\` within a repository (\`repoSlug\`). If \`workspaceSlug\` is not provided, the system will use your default workspace. Retrieves both general PR comments and inline code comments, indicating their location if applicable. Supports pagination via \`limit\` and \`cursor\`. Pagination details are included at the end of the text content. Returns a formatted Markdown list with each comment's author, timestamp, content, and location for inline comments. Requires Bitbucket credentials to be configured.`,
-		ListPullRequestCommentsToolArgs.shape,
-		listPullRequestComments,
-	);
 
 	// Register the add pull request comment tool
 	server.tool(

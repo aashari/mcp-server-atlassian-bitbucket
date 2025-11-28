@@ -1,6 +1,20 @@
 import { z } from 'zod';
 
 /**
+ * Pull request tool types.
+ *
+ * NOTE: ListPullRequestsToolArgs MCP tool has been deprecated.
+ * The bb_ls_prs tool has been replaced by the generic bb_get tool.
+ * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests" })
+ *
+ * NOTE: ListPullRequestCommentsToolArgs MCP tool has been deprecated.
+ * The bb_ls_pr_comments tool has been replaced by the generic bb_get tool.
+ * Use: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests/{pr_id}/comments" })
+ *
+ * These schemas are kept for backwards compatibility with the CLI and controller.
+ */
+
+/**
  * Base pagination arguments for all tools
  */
 const PaginationArgs = {

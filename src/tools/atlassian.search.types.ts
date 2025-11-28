@@ -1,6 +1,19 @@
 import { z } from 'zod';
 
 /**
+ * Search tool types.
+ *
+ * NOTE: SearchToolArgs MCP tool has been deprecated.
+ * The bb_search tool has been replaced by the generic bb_get tool.
+ * Use the following paths:
+ * - Code search: bb_get({ path: "/search/code", queryParams: { search_query: "query", workspace: "myteam" } })
+ * - Repository search: bb_get({ path: "/repositories/{workspace}", queryParams: { q: "query" } })
+ * - Pull request search: bb_get({ path: "/repositories/{workspace}/{repo_slug}/pullrequests", queryParams: { q: "query" } })
+ *
+ * These schemas are kept for backwards compatibility with the CLI and controller.
+ */
+
+/**
  * Pagination arguments
  * Used for pagination of search results
  */

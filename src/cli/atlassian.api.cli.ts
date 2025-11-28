@@ -29,19 +29,19 @@ function register(program: Command): void {
 	program
 		.command('get')
 		.description(
-			'Make a GET request to any Bitbucket API endpoint. Returns raw JSON.',
+			'GET any Bitbucket endpoint. Auto-adds /2.0, supports query params and JMESPath filtering, returns raw JSON.',
 		)
 		.requiredOption(
 			'-p, --path <path>',
-			'API endpoint path (without base URL). Must start with "/". Examples: "/workspaces", "/repositories/{workspace}/{repo_slug}"',
+			'API endpoint path (without base URL). Must start with "/"; "/2.0" is added automatically. Examples: "/workspaces", "/repositories/{workspace}/{repo_slug}".',
 		)
 		.option(
 			'-q, --query-params <json>',
-			'Query parameters as JSON string. Example: \'{"pagelen": "25", "page": "2"}\'',
+			'Query parameters as JSON string. Example: \'{"pagelen": "25", "page": "2", "q": "state=\\"OPEN\\""}\'',
 		)
 		.option(
 			'--jq <expression>',
-			'JMESPath expression to filter/transform the JSON response. Examples: "values[*].name", "size", "{name: name, uuid: uuid}"',
+			'JMESPath expression to filter/transform the JSON response. Examples: "values[*].name", "size", "{name: name, uuid: uuid}". See https://jmespath.org/',
 		)
 		.action(async (options) => {
 			const actionLogger = cliLogger.forMethod('get');
