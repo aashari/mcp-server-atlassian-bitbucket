@@ -27,7 +27,7 @@ export interface AtlassianCredentials {
  * Interface for HTTP request options
  */
 export interface RequestOptions {
-	method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+	method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 	headers?: Record<string, string>;
 	body?: unknown;
 	timeout?: number;

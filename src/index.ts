@@ -10,13 +10,9 @@ import type { Request, Response } from 'express';
 import express from 'express';
 import cors from 'cors';
 
-// Import Bitbucket-specific tools
-import atlassianWorkspaces from './tools/atlassian.workspaces.tool.js';
-import atlassianRepositories from './tools/atlassian.repositories.tool.js';
-import atlassianPullRequests from './tools/atlassian.pullrequests.tool.js';
-import atlassianSearch from './tools/atlassian.search.tool.js';
-import atlassianDiff from './tools/atlassian.diff.tool.js';
+// Import tools
 import atlassianApi from './tools/atlassian.api.tool.js';
+import atlassianRepositories from './tools/atlassian.repositories.tool.js';
 
 // Create a contextualized logger for this file
 const indexLogger = Logger.forContext('index.ts');
@@ -57,12 +53,8 @@ export async function startServer(
 
 	// Register all tools
 	serverLogger.info('Registering MCP tools...');
-	atlassianWorkspaces.registerTools(serverInstance);
-	atlassianRepositories.registerTools(serverInstance);
-	atlassianPullRequests.registerTools(serverInstance);
-	atlassianSearch.registerTools(serverInstance);
-	atlassianDiff.registerTools(serverInstance);
 	atlassianApi.registerTools(serverInstance);
+	atlassianRepositories.registerTools(serverInstance);
 	serverLogger.info('All tools registered successfully');
 
 	if (mode === 'stdio') {

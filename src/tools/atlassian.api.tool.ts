@@ -4,12 +4,16 @@ import { formatErrorForMcpTool } from '../utils/error.util.js';
 import {
 	GetApiToolArgs,
 	type GetApiToolArgsType,
-	PostApiToolArgs,
-	type PostApiToolArgsType,
+	RequestWithBodyArgs,
+	type RequestWithBodyArgsType,
+	DeleteApiToolArgs,
 } from './atlassian.api.types.js';
 import {
 	handleGet,
 	handlePost,
+	handlePut,
+	handlePatch,
+	handleDelete,
 } from '../controllers/atlassian.api.controller.js';
 
 // Create a contextualized logger for this file
@@ -19,82 +23,97 @@ const toolLogger = Logger.forContext('tools/atlassian.api.tool.ts');
 toolLogger.debug('Bitbucket API tool initialized');
 
 /**
- * MCP Tool: Generic Bitbucket GET Request
+ * Creates an MCP tool handler for GET/DELETE requests (no body)
  *
- * Makes a GET request to any Bitbucket API endpoint.
- * Returns raw JSON response with optional JMESPath filtering.
- *
- * @param args - Tool arguments containing path, queryParams, and optional jq filter
- * @returns MCP response with JSON data
- * @throws Will return error message if request fails
+ * @param methodName - Name of the HTTP method for logging
+ * @param handler - Controller handler function
+ * @returns MCP tool handler function
  */
-async function get(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.api.tool.ts',
-		'get',
-	);
-	methodLogger.debug('Making GET request with args:', args);
+function createReadHandler(
+	methodName: string,
+	handler: (options: GetApiToolArgsType) => Promise<{ content: string }>,
+) {
+	return async (args: Record<string, unknown>) => {
+		const methodLogger = Logger.forContext(
+			'tools/atlassian.api.tool.ts',
+			methodName.toLowerCase(),
+		);
+		methodLogger.debug(`Making ${methodName} request with args:`, args);
 
-	try {
-		const result = await handleGet(args as GetApiToolArgsType);
+		try {
+			const result = await handler(args as GetApiToolArgsType);
 
-		methodLogger.debug('Successfully retrieved response from controller');
+			methodLogger.debug(
+				'Successfully retrieved response from controller',
+			);
 
-		return {
-			content: [
-				{
-					type: 'text' as const,
-					text: result.content,
-				},
-			],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to make GET request', error);
-		return formatErrorForMcpTool(error);
-	}
+			return {
+				content: [
+					{
+						type: 'text' as const,
+						text: result.content,
+					},
+				],
+			};
+		} catch (error) {
+			methodLogger.error(`Failed to make ${methodName} request`, error);
+			return formatErrorForMcpTool(error);
+		}
+	};
 }
 
 /**
- * MCP Tool: Generic Bitbucket POST Request
+ * Creates an MCP tool handler for POST/PUT/PATCH requests (with body)
  *
- * Makes a POST request to any Bitbucket API endpoint.
- * Returns raw JSON response with optional JMESPath filtering.
- *
- * @param args - Tool arguments containing path, body, queryParams, and optional jq filter
- * @returns MCP response with JSON data
- * @throws Will return error message if request fails
+ * @param methodName - Name of the HTTP method for logging
+ * @param handler - Controller handler function
+ * @returns MCP tool handler function
  */
-async function post(args: Record<string, unknown>) {
-	const methodLogger = Logger.forContext(
-		'tools/atlassian.api.tool.ts',
-		'post',
-	);
-	methodLogger.debug('Making POST request with args:', {
-		path: args.path,
-		bodyKeys: args.body ? Object.keys(args.body as object) : [],
-	});
+function createWriteHandler(
+	methodName: string,
+	handler: (options: RequestWithBodyArgsType) => Promise<{ content: string }>,
+) {
+	return async (args: Record<string, unknown>) => {
+		const methodLogger = Logger.forContext(
+			'tools/atlassian.api.tool.ts',
+			methodName.toLowerCase(),
+		);
+		methodLogger.debug(`Making ${methodName} request with args:`, {
+			path: args.path,
+			bodyKeys: args.body ? Object.keys(args.body as object) : [],
+		});
 
-	try {
-		const result = await handlePost(args as PostApiToolArgsType);
+		try {
+			const result = await handler(args as RequestWithBodyArgsType);
 
-		methodLogger.debug('Successfully received response from controller');
+			methodLogger.debug(
+				'Successfully received response from controller',
+			);
 
-		return {
-			content: [
-				{
-					type: 'text' as const,
-					text: result.content,
-				},
-			],
-		};
-	} catch (error) {
-		methodLogger.error('Failed to make POST request', error);
-		return formatErrorForMcpTool(error);
-	}
+			return {
+				content: [
+					{
+						type: 'text' as const,
+						text: result.content,
+					},
+				],
+			};
+		} catch (error) {
+			methodLogger.error(`Failed to make ${methodName} request`, error);
+			return formatErrorForMcpTool(error);
+		}
+	};
 }
 
+// Create tool handlers
+const get = createReadHandler('GET', handleGet);
+const post = createWriteHandler('POST', handlePost);
+const put = createWriteHandler('PUT', handlePut);
+const patch = createWriteHandler('PATCH', handlePatch);
+const del = createReadHandler('DELETE', handleDelete);
+
 /**
- * Register generic Bitbucket API tool with the MCP server.
+ * Register generic Bitbucket API tools with the MCP server.
  */
 function registerTools(server: McpServer) {
 	const registerLogger = Logger.forContext(
@@ -103,45 +122,74 @@ function registerTools(server: McpServer) {
 	);
 	registerLogger.debug('Registering API tools...');
 
-	// Register the generic GET tool
+	// Register the GET tool
 	server.tool(
 		'bb_get',
-		`Fetches any Bitbucket Cloud REST API endpoint. Returns raw JSON (optionally filtered via JMESPath).
+		`Read any Bitbucket data. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
 
-This is the primary tool for reading Bitbucket data—workspaces, repositories, pull requests, commits, branches, file contents, diffs, and more. Construct the path based on what you need; the Bitbucket REST API follows predictable resource patterns.
+Paths follow REST conventions: \`/workspaces\`, \`/repositories/{workspace}/{repo}\`, then append \`/pullrequests\`, \`/commits\`, \`/refs/branches\`, \`/src/{ref}/{path}\`, \`/diff/{spec}\`, etc.
 
-**Parameters:**
-- \`path\` (required): API path starting with "/". The "/2.0" prefix is added automatically if omitted.
-- \`queryParams\` (optional): Key-value pairs for query string (pagination, filtering, sorting, field selection).
-- \`jq\` (optional): JMESPath expression to filter/reshape the JSON response.
+Use \`queryParams\` for pagination (\`pagelen\`, \`page\`), filtering (\`q\`), sorting (\`sort\`), or partial responses (\`fields\`). The \`/2.0\` prefix is added automatically.
 
-**Path patterns:** Bitbucket paths follow REST conventions—\`/repositories/{workspace}/{repo}\` for repo details, append \`/pullrequests\`, \`/commits\`, \`/refs/branches\`, \`/src/{ref}/{filepath}\`, \`/diff/{spec}\`, \`/diffstat/{spec}\` etc. When unsure, consult Bitbucket REST docs or search the web for the specific endpoint.
-
-**Filtering & pagination:** Use \`queryParams\` for \`pagelen\`, \`page\`, \`q\` (filter), \`sort\`, and \`fields\` (partial response). Use \`jq\` to extract specific fields from the response (e.g., \`"values[*].name"\` to list names, or \`"{count:size,repos:values[*].slug}"\` to reshape).
-
-Docs: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		GetApiToolArgs.shape,
 		get,
 	);
 
-	// Register the generic POST tool
+	// Register the POST tool
 	server.tool(
 		'bb_post',
-		`Creates resources via Bitbucket Cloud REST API. Returns the created resource as JSON (optionally filtered via JMESPath).
+		`Create Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
 
-Use this for any POST operation—creating pull requests, adding comments, approving PRs, creating branches, etc. The request body structure depends on the endpoint; consult Bitbucket REST docs for required fields.
+Common operations: create PRs, add comments, create branches. Body structure varies by endpoint—consult Bitbucket docs for required fields.
 
-**Parameters:**
-- \`path\` (required): API path starting with "/". The "/2.0" prefix is added automatically if omitted.
-- \`body\` (required): JSON object for the request body.
-- \`queryParams\` (optional): Key-value pairs for query string.
-- \`jq\` (optional): JMESPath expression to filter/reshape the JSON response.
+The \`/2.0\` prefix is added automatically.
 
-**Common patterns:** POST to \`/repositories/{workspace}/{repo}/pullrequests\` to create a PR (body needs \`title\` and \`source.branch.name\`), POST to \`.../pullrequests/{id}/comments\` to add a comment (body needs \`content.raw\`), POST to \`.../pullrequests/{id}/approve\` to approve (empty body), POST to \`.../refs/branches\` to create a branch.
-
-Docs: https://developer.atlassian.com/cloud/bitbucket/rest/`,
-		PostApiToolArgs.shape,
+API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		RequestWithBodyArgs.shape,
 		post,
+	);
+
+	// Register the PUT tool
+	server.tool(
+		'bb_put',
+		`Replace Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+
+Used for full resource replacement. Common operations: update repository settings, replace file content. Body contains the complete new resource state.
+
+The \`/2.0\` prefix is added automatically.
+
+API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		RequestWithBodyArgs.shape,
+		put,
+	);
+
+	// Register the PATCH tool
+	server.tool(
+		'bb_patch',
+		`Partially update Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+
+Used for partial updates. Common operations: update PR title/description, modify repository properties. Body contains only the fields to update.
+
+The \`/2.0\` prefix is added automatically.
+
+API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		RequestWithBodyArgs.shape,
+		patch,
+	);
+
+	// Register the DELETE tool
+	server.tool(
+		'bb_delete',
+		`Delete Bitbucket resources. Returns JSON (if any), optionally filtered with JMESPath (\`jq\` param).
+
+Common operations: delete branches, remove comments, decline PRs. Some DELETE endpoints return empty responses.
+
+The \`/2.0\` prefix is added automatically.
+
+API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
+		DeleteApiToolArgs.shape,
+		del,
 	);
 
 	registerLogger.debug('Successfully registered API tools');
