@@ -6,17 +6,17 @@ Transform how you work with Bitbucket by connecting Claude, Cursor AI, and other
 
 ## What You Can Do
 
-✅ **Ask AI about your code**: "What's the latest commit in my main repository?"  
-✅ **Get PR insights**: "Show me all open pull requests that need review"  
-✅ **Search your codebase**: "Find all JavaScript files that use the authentication function"  
-✅ **Review code changes**: "Compare the differences between my feature branch and main"  
-✅ **Manage pull requests**: "Create a PR for my new-feature branch"  
-✅ **Automate workflows**: "Add a comment to PR #123 with the test results"  
+- **Ask AI about your code**: "What's the latest commit in my main repository?"
+- **Get PR insights**: "Show me all open pull requests that need review"
+- **Search your codebase**: "Find all JavaScript files that use the authentication function"
+- **Review code changes**: "Compare the differences between my feature branch and main"
+- **Manage pull requests**: "Create a PR for my new-feature branch"
+- **Automate workflows**: "Add a comment to PR #123 with the test results"
 
 ## Perfect For
 
 - **Developers** who want AI assistance with code reviews and repository management
-- **Team Leads** needing quick insights into project status and pull request activity  
+- **Team Leads** needing quick insights into project status and pull request activity
 - **DevOps Engineers** automating repository workflows and branch management
 - **Anyone** who wants to interact with Bitbucket using natural language
 
@@ -26,7 +26,7 @@ Get up and running in 2 minutes:
 
 ### 1. Get Your Bitbucket Credentials
 
-> ⚠️ **IMPORTANT**: Bitbucket App Passwords are being deprecated and will be removed by **June 2026**. We recommend using **Scoped API Tokens** for new setups.
+> **IMPORTANT**: Bitbucket App Passwords are being deprecated and will be removed by **June 2026**. We recommend using **Scoped API Tokens** for new setups.
 
 #### Option A: Scoped API Token (Recommended - Future-Proof)
 
@@ -66,13 +66,16 @@ export ATLASSIAN_BITBUCKET_USERNAME="your_username"
 export ATLASSIAN_BITBUCKET_APP_PASSWORD="your_app_password"
 
 # List your workspaces
-npx -y @aashari/mcp-server-atlassian-bitbucket ls-workspaces
+npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/workspaces"
 
-# List repositories in your workspace
-npx -y @aashari/mcp-server-atlassian-bitbucket ls-repos --workspace-slug your-workspace
+# List repositories in a workspace
+npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/your-workspace"
 
-# Get details about a specific repository  
-npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/your-workspace/your-repo" --jq "{name: name, default_branch: mainbranch.name}"
+# Get pull requests for a repository
+npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/your-workspace/your-repo/pullrequests"
+
+# Get repository details with JMESPath filtering
+npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/your-workspace/your-repo" --jq "{name: name, language: language}"
 ```
 
 ## Connect to AI Assistants
@@ -113,7 +116,7 @@ Add this to your Claude configuration file (`~/.claude/claude_desktop_config.jso
 }
 ```
 
-Restart Claude Desktop, and you'll see "🔗 bitbucket" in the status bar.
+Restart Claude Desktop, and you'll see the bitbucket server in the status bar.
 
 ### For Other AI Assistants
 
@@ -157,9 +160,59 @@ Create `~/.mcp/configs.json` for system-wide configuration:
 
 **Alternative config keys:** The system also accepts `"atlassian-bitbucket"`, `"@aashari/mcp-server-atlassian-bitbucket"`, or `"mcp-server-atlassian-bitbucket"` instead of `"bitbucket"`.
 
+## Available Tools
+
+This MCP server provides 6 generic tools that can access any Bitbucket API endpoint:
+
+| Tool | Description |
+|------|-------------|
+| `bb_get` | GET any Bitbucket API endpoint (read data) |
+| `bb_post` | POST to any endpoint (create resources) |
+| `bb_put` | PUT to any endpoint (replace resources) |
+| `bb_patch` | PATCH any endpoint (partial updates) |
+| `bb_delete` | DELETE any endpoint (remove resources) |
+| `bb_clone` | Clone a repository locally |
+
+### Common API Paths
+
+**Workspaces & Repositories:**
+- `/workspaces` - List all workspaces
+- `/repositories/{workspace}` - List repos in workspace
+- `/repositories/{workspace}/{repo}` - Get repo details
+- `/repositories/{workspace}/{repo}/refs/branches` - List branches
+- `/repositories/{workspace}/{repo}/commits` - List commits
+- `/repositories/{workspace}/{repo}/src/{commit}/{filepath}` - Get file content
+
+**Pull Requests:**
+- `/repositories/{workspace}/{repo}/pullrequests` - List PRs
+- `/repositories/{workspace}/{repo}/pullrequests/{id}` - Get PR details
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/diff` - Get PR diff
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/comments` - List PR comments
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/approve` - Approve PR (POST)
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/merge` - Merge PR (POST)
+
+**Comparisons:**
+- `/repositories/{workspace}/{repo}/diff/{source}..{destination}` - Compare branches/commits
+
+### JMESPath Filtering
+
+All tools support optional JMESPath (`jq`) filtering to extract specific data:
+
+```bash
+# Get just repository names
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/myworkspace" \
+  --jq "values[].name"
+
+# Get PR titles and states
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/myworkspace/myrepo/pullrequests" \
+  --jq "values[].{title: title, state: state}"
+```
+
 ## Real-World Examples
 
-### 🔍 Explore Your Repositories
+### Explore Your Repositories
 
 Ask your AI assistant:
 - *"List all repositories in my main workspace"*
@@ -167,7 +220,7 @@ Ask your AI assistant:
 - *"What's the commit history for the feature-auth branch?"*
 - *"Get the content of src/config.js from the main branch"*
 
-### 📋 Manage Pull Requests
+### Manage Pull Requests
 
 Ask your AI assistant:
 - *"Show me all open pull requests that need review"*
@@ -176,21 +229,46 @@ Ask your AI assistant:
 - *"Add a comment to PR #15 saying the tests passed"*
 - *"Approve pull request #33"*
 
-### 🔧 Work with Branches and Code
+### Work with Branches and Code
 
 Ask your AI assistant:
 - *"Compare my feature branch with the main branch"*
-- *"Create a new branch called hotfix-login from the main branch"*
 - *"List all branches in the user-service repository"*
 - *"Show me the differences between commits abc123 and def456"*
 
-### 🔎 Search and Discovery
+## CLI Commands
 
-Ask your AI assistant:
-- *"Search for JavaScript files that contain 'authentication'"*
-- *"Find all pull requests related to the login feature"*
-- *"Search for repositories in the mobile project"*
-- *"Show me code files that use the React framework"*
+The CLI mirrors the MCP tools for direct terminal access:
+
+```bash
+# GET request
+npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/workspaces"
+
+# POST request (create a PR)
+npx -y @aashari/mcp-server-atlassian-bitbucket post \
+  --path "/repositories/myworkspace/myrepo/pullrequests" \
+  --body '{"title": "My PR", "source": {"branch": {"name": "feature"}}, "destination": {"branch": {"name": "main"}}}'
+
+# PUT request (update resource)
+npx -y @aashari/mcp-server-atlassian-bitbucket put \
+  --path "/repositories/myworkspace/myrepo" \
+  --body '{"description": "Updated description"}'
+
+# PATCH request (partial update)
+npx -y @aashari/mcp-server-atlassian-bitbucket patch \
+  --path "/repositories/myworkspace/myrepo/pullrequests/123" \
+  --body '{"title": "Updated PR title"}'
+
+# DELETE request
+npx -y @aashari/mcp-server-atlassian-bitbucket delete \
+  --path "/repositories/myworkspace/myrepo/refs/branches/old-branch"
+
+# Clone repository
+npx -y @aashari/mcp-server-atlassian-bitbucket clone \
+  --workspace myworkspace \
+  --repo myrepo \
+  --target-dir ./my-local-clone
+```
 
 ## Troubleshooting
 
@@ -200,56 +278,37 @@ Ask your AI assistant:
    - **Standard Atlassian method**: Use your Atlassian account email + API token (works with any Atlassian service)
    - **Bitbucket-specific method**: Use your Bitbucket username + App password (Bitbucket only)
 
-2. **For Bitbucket App Passwords** (if using Option 2):
-   - Go to [Bitbucket App Passwords](https://bitbucket.org/account/settings/app-passwords/)
-   - Make sure your app password has the right permissions (Workspaces: Read, Repositories: Read, Pull Requests: Read)
-
-3. **For Scoped API Tokens** (recommended):
+2. **For Scoped API Tokens** (recommended):
    - Go to [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
    - Make sure your token is still active and has the right scopes
-   - Update your `~/.mcp/configs.json` file to use the new scoped API token format:
-   ```json
-   {
-     "@aashari/mcp-server-atlassian-bitbucket": {
-       "environments": {
-         "ATLASSIAN_USER_EMAIL": "your.email@company.com",
-         "ATLASSIAN_API_TOKEN": "ATATT3xFfGF0..."
-       }
-     }
-   }
-   ```
+   - Required scopes: `repository`, `workspace` (add `pullrequest` for PR management)
+
+3. **For Bitbucket App Passwords** (legacy):
+   - Go to [Bitbucket App Passwords](https://bitbucket.org/account/settings/app-passwords/)
+   - Make sure your app password has the right permissions
 
 4. **Verify your credentials**:
    ```bash
-   # Test your credentials work
-   npx -y @aashari/mcp-server-atlassian-bitbucket ls-workspaces
+   npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/workspaces"
    ```
 
-### "Workspace not found" or "Repository not found"
+### "Resource not found" or "404"
 
-1. **Check your workspace slug**:
+1. **Check the API path**:
+   - Paths are case-sensitive
+   - Use workspace slug (from URL), not display name
+   - Example: If your repo URL is `https://bitbucket.org/myteam/my-repo`, use `myteam` and `my-repo`
+
+2. **Verify the resource exists**:
    ```bash
-   # List your workspaces to see the correct slugs
-   npx -y @aashari/mcp-server-atlassian-bitbucket ls-workspaces
+   # List workspaces to find the correct slug
+   npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/workspaces"
    ```
-
-2. **Use the exact slug from Bitbucket URL**:
-   - If your repo URL is `https://bitbucket.org/myteam/my-repo`
-   - Workspace slug is `myteam`
-   - Repository slug is `my-repo`
-
-### "No default workspace configured"
-
-Set a default workspace to avoid specifying it every time:
-```bash
-export BITBUCKET_DEFAULT_WORKSPACE="your-main-workspace-slug"
-```
 
 ### Claude Desktop Integration Issues
 
 1. **Restart Claude Desktop** after updating the config file
-2. **Check the status bar** for the "🔗 bitbucket" indicator
-3. **Verify config file location**:
+2. **Verify config file location**:
    - macOS: `~/.claude/claude_desktop_config.json`
    - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
@@ -265,30 +324,21 @@ If you're still having issues:
 ### What permissions do I need?
 
 **For Scoped API Tokens** (recommended):
-- Your regular Atlassian account with access to Bitbucket
-- Scoped API token created at [id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
-- Required scopes: `repository`, `workspace` (add `pullrequest` for PR management)
+- Required scopes: `repository`, `workspace`
+- Add `pullrequest` for PR management
 
-**For Bitbucket App Passwords** (legacy - being deprecated):
-- For **read-only access** (viewing repos, PRs, commits):
-  - Workspaces: Read
-  - Repositories: Read  
-  - Pull Requests: Read
-- For **full functionality** (creating PRs, commenting):
-  - Add "Write" permissions for Repositories and Pull Requests
+**For Bitbucket App Passwords** (legacy):
+- For **read-only access**: Workspaces: Read, Repositories: Read, Pull Requests: Read
+- For **full functionality**: Add "Write" permissions for Repositories and Pull Requests
 
 ### Can I use this with private repositories?
 
-Yes! This works with both public and private repositories. You just need the appropriate permissions through your Bitbucket App Password.
-
-### Do I need to specify workspace every time?
-
-No! Set `BITBUCKET_DEFAULT_WORKSPACE` in your environment or config file, and it will be used automatically when you don't specify one.
+Yes! This works with both public and private repositories. You just need the appropriate permissions through your credentials.
 
 ### What AI assistants does this work with?
 
 Any AI assistant that supports the Model Context Protocol (MCP):
-- Claude Desktop (most popular)
+- Claude Desktop
 - Cursor AI
 - Continue.dev
 - Many others
@@ -301,9 +351,28 @@ Yes! This tool:
 - Never sends your data to third parties
 - Only accesses what you give it permission to access
 
-### Can I use this for multiple Bitbucket accounts?
+## Migration from v1.x
 
-Currently, each installation supports one set of credentials. For multiple accounts, you'd need separate configurations.
+Version 2.0 replaces 20+ specific tools with 6 generic HTTP method tools. If you're upgrading from v1.x:
+
+**Before (v1.x):**
+```
+bb_ls_workspaces, bb_get_workspace, bb_ls_repos, bb_get_repo,
+bb_list_branches, bb_get_commit_history, bb_get_file,
+bb_ls_prs, bb_get_pr, bb_add_pr, bb_approve_pr, ...
+```
+
+**After (v2.0):**
+```
+bb_get, bb_post, bb_put, bb_patch, bb_delete, bb_clone
+```
+
+**Migration examples:**
+- `bb_ls_workspaces` → `bb_get` with path `/workspaces`
+- `bb_ls_repos` → `bb_get` with path `/repositories/{workspace}`
+- `bb_get_pr` → `bb_get` with path `/repositories/{workspace}/{repo}/pullrequests/{id}`
+- `bb_add_pr` → `bb_post` with path `/repositories/{workspace}/{repo}/pullrequests`
+- `bb_approve_pr` → `bb_post` with path `/repositories/{workspace}/{repo}/pullrequests/{id}/approve`
 
 ## Support
 
@@ -316,4 +385,4 @@ Need help? Here's how to get assistance:
 
 ---
 
-*Made with ❤️ for developers who want to bring AI into their Bitbucket workflow.*
+*Made with care for developers who want to bring AI into their Bitbucket workflow.*
