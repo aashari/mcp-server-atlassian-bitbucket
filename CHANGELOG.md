@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.0.0...v2.1.0) (2025-11-30)
+
+
+### Features
+
+* add TOON output format for token-efficient LLM responses ([#187](https://github.com/aashari/mcp-server-atlassian-bitbucket/issues/187)) ([b36eb00](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/b36eb00bf5f7fc7932423f9184cb58a67065eb5a))
+
 # [2.0.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v1.45.0...v2.0.0) (2025-11-28)
 
 
