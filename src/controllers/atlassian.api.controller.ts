@@ -9,7 +9,7 @@ import {
 	GetApiToolArgsType,
 	RequestWithBodyArgsType,
 } from '../tools/atlassian.api.types.js';
-import { applyJqFilter, toJsonString } from '../utils/jq.util.js';
+import { applyJqFilter, toOutputString } from '../utils/jq.util.js';
 import { createAuthMissingError } from '../utils/error.util.js';
 
 // Logger instance for this module
@@ -21,12 +21,18 @@ const logger = Logger.forContext('controllers/atlassian.api.controller.ts');
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /**
+ * Output format type
+ */
+type OutputFormat = 'toon' | 'json';
+
+/**
  * Base options for all API requests
  */
 interface BaseRequestOptions {
 	path: string;
 	queryParams?: Record<string, string>;
 	jq?: string;
+	outputFormat?: OutputFormat;
 }
 
 /**
@@ -122,8 +128,12 @@ async function handleRequest(
 		// Apply JQ filter if provided, otherwise return raw data
 		const result = applyJqFilter(response, options.jq);
 
+		// Convert to output format (TOON by default, JSON if requested)
+		const useToon = options.outputFormat !== 'json';
+		const content = await toOutputString(result, useToon);
+
 		return {
-			content: toJsonString(result),
+			content,
 		};
 	} catch (error) {
 		throw handleControllerError(error, {

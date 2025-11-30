@@ -125,7 +125,18 @@ function registerTools(server: McpServer) {
 	// Register the GET tool
 	server.tool(
 		'bb_get',
-		`Read any Bitbucket data. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+		`Read any Bitbucket data. Returns TOON format by default (30-60% fewer tokens than JSON).
+
+**IMPORTANT - Cost Optimization:**
+- ALWAYS use \`jq\` param to filter response fields. Unfiltered responses are very expensive!
+- Use \`pagelen\` query param to restrict result count (e.g., \`pagelen: "5"\`)
+- If unsure about available fields, first fetch ONE item with \`pagelen: "1"\` and NO jq filter to explore the schema, then use jq in subsequent calls
+
+**Schema Discovery Pattern:**
+1. First call: \`path: "/workspaces", queryParams: {"pagelen": "1"}\` (no jq) - explore available fields
+2. Then use: \`jq: "values[*].{slug: slug, name: name, uuid: uuid}"\` - extract only what you need
+
+**Output format:** TOON (default, token-efficient) or JSON (\`outputFormat: "json"\`)
 
 **Common paths:**
 - \`/workspaces\` - list workspaces
@@ -144,6 +155,8 @@ function registerTools(server: McpServer) {
 
 **Example filters (q param):** \`state="OPEN"\`, \`source.branch.name="feature"\`, \`title~"bug"\`
 
+**JQ examples:** \`values[*].slug\`, \`values[0]\`, \`values[*].{name: name, uuid: uuid}\`
+
 The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
 		GetApiToolArgs.shape,
 		get,
@@ -152,7 +165,13 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 	// Register the POST tool
 	server.tool(
 		'bb_post',
-		`Create Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+		`Create Bitbucket resources. Returns TOON format by default (token-efficient).
+
+**IMPORTANT - Cost Optimization:**
+- Use \`jq\` param to extract only needed fields from response (e.g., \`jq: "{id: id, title: title}"\`)
+- Unfiltered responses include all metadata and are expensive!
+
+**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 
@@ -179,7 +198,13 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 	// Register the PUT tool
 	server.tool(
 		'bb_put',
-		`Replace Bitbucket resources (full update). Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+		`Replace Bitbucket resources (full update). Returns TOON format by default.
+
+**IMPORTANT - Cost Optimization:**
+- Use \`jq\` param to extract only needed fields from response
+- Example: \`jq: "{uuid: uuid, name: name}"\`
+
+**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 
@@ -200,7 +225,11 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 	// Register the PATCH tool
 	server.tool(
 		'bb_patch',
-		`Partially update Bitbucket resources. Returns JSON, optionally filtered with JMESPath (\`jq\` param).
+		`Partially update Bitbucket resources. Returns TOON format by default.
+
+**IMPORTANT - Cost Optimization:** Use \`jq\` param to filter response fields.
+
+**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 
@@ -224,7 +253,9 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 	// Register the DELETE tool
 	server.tool(
 		'bb_delete',
-		`Delete Bitbucket resources. Returns JSON (if any), optionally filtered with JMESPath (\`jq\` param).
+		`Delete Bitbucket resources. Returns TOON format by default.
+
+**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 

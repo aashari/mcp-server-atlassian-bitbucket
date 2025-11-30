@@ -1,5 +1,6 @@
 import jmespath from 'jmespath';
 import { Logger } from './logger.util.js';
+import { toToonOrJson } from './toon.util.js';
 
 const logger = Logger.forContext('utils/jq.util.ts');
 
@@ -59,4 +60,32 @@ export function toJsonString(data: unknown, pretty: boolean = true): string {
 		return JSON.stringify(data, null, 2);
 	}
 	return JSON.stringify(data);
+}
+
+/**
+ * Convert data to output string for MCP response
+ *
+ * By default, converts to TOON format (Token-Oriented Object Notation)
+ * for improved LLM token efficiency (30-60% fewer tokens).
+ * Falls back to JSON if TOON conversion fails or if useToon is false.
+ *
+ * @param data - The data to convert
+ * @param useToon - Whether to use TOON format (default: true)
+ * @param pretty - Whether to pretty-print JSON (default: true)
+ * @returns TOON formatted string (default), or JSON string
+ */
+export async function toOutputString(
+	data: unknown,
+	useToon: boolean = true,
+	pretty: boolean = true,
+): Promise<string> {
+	const jsonString = toJsonString(data, pretty);
+
+	// Return JSON directly if TOON is not requested
+	if (!useToon) {
+		return jsonString;
+	}
+
+	// Try TOON conversion with JSON fallback
+	return toToonOrJson(data, jsonString);
 }
