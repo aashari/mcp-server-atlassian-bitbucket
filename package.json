@@ -95,6 +95,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.5",
+    "@toon-format/toon": "^2.0.1",
     "commander": "^14.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
