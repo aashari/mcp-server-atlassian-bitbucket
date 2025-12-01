@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.1.0...v2.2.0) (2025-12-01)
+
+
+### Features
+
+* modernize MCP SDK to v1.23.0 with registerTool API ([48234ac](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/48234acd05bc629f9e26425100f0821dd875fa33))
+
 # [2.1.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.0.0...v2.1.0) (2025-11-30)
 
 
