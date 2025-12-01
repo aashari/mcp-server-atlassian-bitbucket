@@ -94,14 +94,14 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.5",
+    "@modelcontextprotocol/sdk": "^1.23.0",
     "@toon-format/toon": "^2.0.1",
     "commander": "^14.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "jmespath": "^0.16.0",
-    "zod": "^3.25.76"
+    "zod": "^4.1.13"
   },
   "directories": {
     "example": "examples"

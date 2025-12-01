@@ -39,7 +39,7 @@ const BaseApiToolArgs = {
 	 * Optional query parameters as key-value pairs
 	 */
 	queryParams: z
-		.record(z.string())
+		.record(z.string(), z.string())
 		.optional()
 		.describe(
 			'Optional query parameters as key-value pairs. Examples: {"pagelen": "25", "page": "2", "q": "state=\\"OPEN\\"", "fields": "values.title,values.state"}',
@@ -67,7 +67,7 @@ const BaseApiToolArgs = {
  * Body field for requests that include a request body (POST, PUT, PATCH)
  */
 const bodyField = z
-	.record(z.unknown())
+	.record(z.string(), z.unknown())
 	.describe(
 		'Request body as a JSON object. Structure depends on the endpoint. Example for PR: {"title": "My PR", "source": {"branch": {"name": "feature"}}}',
 	);

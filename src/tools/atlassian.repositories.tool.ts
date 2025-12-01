@@ -42,8 +42,14 @@ async function handleRepoClone(args: Record<string, unknown>) {
 	}
 }
 
+// Tool description
+const BB_CLONE_DESCRIPTION = `Clone a Bitbucket repository to your local filesystem using SSH (preferred) or HTTPS.
+
+Provide \`repoSlug\` and \`targetPath\` (absolute path). Clones into \`targetPath/repoSlug\`. SSH keys must be configured; falls back to HTTPS if unavailable.`;
+
 /**
  * Register all Bitbucket repository tools with the MCP server.
+ * Uses the modern registerTool API (SDK v1.22.0+) instead of deprecated tool() method.
  *
  * Branch creation is now handled by bb_post tool.
  */
@@ -54,13 +60,14 @@ function registerTools(server: McpServer) {
 	);
 	registerLogger.debug('Registering Repository tools...');
 
-	// Register the clone repository tool
-	server.tool(
+	// Register the clone repository tool using modern registerTool API
+	server.registerTool(
 		'bb_clone',
-		`Clone a Bitbucket repository to your local filesystem using SSH (preferred) or HTTPS.
-
-Provide \`repoSlug\` and \`targetPath\` (absolute path). Clones into \`targetPath/repoSlug\`. SSH keys must be configured; falls back to HTTPS if unavailable.`,
-		CloneRepositoryToolArgs.shape,
+		{
+			title: 'Clone Bitbucket Repository',
+			description: BB_CLONE_DESCRIPTION,
+			inputSchema: CloneRepositoryToolArgs,
+		},
 		handleRepoClone,
 	);
 

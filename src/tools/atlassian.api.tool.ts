@@ -112,20 +112,8 @@ const put = createWriteHandler('PUT', handlePut);
 const patch = createWriteHandler('PATCH', handlePatch);
 const del = createReadHandler('DELETE', handleDelete);
 
-/**
- * Register generic Bitbucket API tools with the MCP server.
- */
-function registerTools(server: McpServer) {
-	const registerLogger = Logger.forContext(
-		'tools/atlassian.api.tool.ts',
-		'registerTools',
-	);
-	registerLogger.debug('Registering API tools...');
-
-	// Register the GET tool
-	server.tool(
-		'bb_get',
-		`Read any Bitbucket data. Returns TOON format by default (30-60% fewer tokens than JSON).
+// Tool descriptions
+const BB_GET_DESCRIPTION = `Read any Bitbucket data. Returns TOON format by default (30-60% fewer tokens than JSON).
 
 **IMPORTANT - Cost Optimization:**
 - ALWAYS use \`jq\` param to filter response fields. Unfiltered responses are very expensive!
@@ -157,15 +145,9 @@ function registerTools(server: McpServer) {
 
 **JQ examples:** \`values[*].slug\`, \`values[0]\`, \`values[*].{name: name, uuid: uuid}\`
 
-The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
-		GetApiToolArgs.shape,
-		get,
-	);
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-	// Register the POST tool
-	server.tool(
-		'bb_post',
-		`Create Bitbucket resources. Returns TOON format by default (token-efficient).
+const BB_POST_DESCRIPTION = `Create Bitbucket resources. Returns TOON format by default (token-efficient).
 
 **IMPORTANT - Cost Optimization:**
 - Use \`jq\` param to extract only needed fields from response (e.g., \`jq: "{id: id, title: title}"\`)
@@ -190,15 +172,9 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 5. **Merge PR:** \`/repositories/{workspace}/{repo}/pullrequests/{id}/merge\`
    body: \`{"merge_strategy": "squash"}\` (strategies: merge_commit, squash, fast_forward)
 
-The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
-		RequestWithBodyArgs.shape,
-		post,
-	);
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-	// Register the PUT tool
-	server.tool(
-		'bb_put',
-		`Replace Bitbucket resources (full update). Returns TOON format by default.
+const BB_PUT_DESCRIPTION = `Replace Bitbucket resources (full update). Returns TOON format by default.
 
 **IMPORTANT - Cost Optimization:**
 - Use \`jq\` param to extract only needed fields from response
@@ -217,15 +193,9 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 3. **Update branch restriction:** \`/repositories/{workspace}/{repo}/branch-restrictions/{id}\`
    body: \`{"kind": "push", "pattern": "main", "users": [{"uuid": "..."}]}\`
 
-The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
-		RequestWithBodyArgs.shape,
-		put,
-	);
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-	// Register the PATCH tool
-	server.tool(
-		'bb_patch',
-		`Partially update Bitbucket resources. Returns TOON format by default.
+const BB_PATCH_DESCRIPTION = `Partially update Bitbucket resources. Returns TOON format by default.
 
 **IMPORTANT - Cost Optimization:** Use \`jq\` param to filter response fields.
 
@@ -245,15 +215,9 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 4. **Update comment:** \`/repositories/{workspace}/{repo}/pullrequests/{pr_id}/comments/{comment_id}\`
    body: \`{"content": {"raw": "Updated comment"}}\`
 
-The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
-		RequestWithBodyArgs.shape,
-		patch,
-	);
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-	// Register the DELETE tool
-	server.tool(
-		'bb_delete',
-		`Delete Bitbucket resources. Returns TOON format by default.
+const BB_DELETE_DESCRIPTION = `Delete Bitbucket resources. Returns TOON format by default.
 
 **Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
 
@@ -267,8 +231,71 @@ The \`/2.0\` prefix is added automatically. API reference: https://developer.atl
 
 Note: Most DELETE endpoints return 204 No Content on success.
 
-The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`,
-		DeleteApiToolArgs.shape,
+The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
+
+/**
+ * Register generic Bitbucket API tools with the MCP server.
+ * Uses the modern registerTool API (SDK v1.22.0+) instead of deprecated tool() method.
+ */
+function registerTools(server: McpServer) {
+	const registerLogger = Logger.forContext(
+		'tools/atlassian.api.tool.ts',
+		'registerTools',
+	);
+	registerLogger.debug('Registering API tools...');
+
+	// Register the GET tool using modern registerTool API
+	server.registerTool(
+		'bb_get',
+		{
+			title: 'Bitbucket GET Request',
+			description: BB_GET_DESCRIPTION,
+			inputSchema: GetApiToolArgs,
+		},
+		get,
+	);
+
+	// Register the POST tool using modern registerTool API
+	server.registerTool(
+		'bb_post',
+		{
+			title: 'Bitbucket POST Request',
+			description: BB_POST_DESCRIPTION,
+			inputSchema: RequestWithBodyArgs,
+		},
+		post,
+	);
+
+	// Register the PUT tool using modern registerTool API
+	server.registerTool(
+		'bb_put',
+		{
+			title: 'Bitbucket PUT Request',
+			description: BB_PUT_DESCRIPTION,
+			inputSchema: RequestWithBodyArgs,
+		},
+		put,
+	);
+
+	// Register the PATCH tool using modern registerTool API
+	server.registerTool(
+		'bb_patch',
+		{
+			title: 'Bitbucket PATCH Request',
+			description: BB_PATCH_DESCRIPTION,
+			inputSchema: RequestWithBodyArgs,
+		},
+		patch,
+	);
+
+	// Register the DELETE tool using modern registerTool API
+	server.registerTool(
+		'bb_delete',
+		{
+			title: 'Bitbucket DELETE Request',
+			description: BB_DELETE_DESCRIPTION,
+			inputSchema: DeleteApiToolArgs,
+		},
 		del,
 	);
 
