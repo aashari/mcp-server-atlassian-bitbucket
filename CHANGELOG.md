@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.2.0...v2.3.0) (2025-12-03)
+
+
+### Features
+
+* add raw response logging with truncation for large API responses ([d13205f](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/d13205fa89c206352bdee3d581333b65eb519fe6))
+
 # [2.2.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.1.0...v2.2.0) (2025-12-01)
 
 
