@@ -3,6 +3,9 @@
 Transform how you work with Bitbucket by connecting Claude, Cursor AI, and other AI assistants directly to your repositories, pull requests, and code. Get instant insights, automate code reviews, and streamline your development workflow.
 
 [![NPM Version](https://img.shields.io/npm/v/@aashari/mcp-server-atlassian-bitbucket)](https://www.npmjs.com/package/@aashari/mcp-server-atlassian-bitbucket)
+[![License](https://img.shields.io/npm/l/@aashari/mcp-server-atlassian-bitbucket)](https://github.com/aashari/mcp-server-atlassian-bitbucket/blob/main/LICENSE)
+
+**Current Version:** 2.2.0
 
 ## What You Can Do
 
@@ -19,6 +22,12 @@ Transform how you work with Bitbucket by connecting Claude, Cursor AI, and other
 - **Team Leads** needing quick insights into project status and pull request activity
 - **DevOps Engineers** automating repository workflows and branch management
 - **Anyone** who wants to interact with Bitbucket using natural language
+
+## Requirements
+
+- **Node.js** 18.0.0 or higher
+- **Bitbucket Cloud** account (not Bitbucket Server/Data Center)
+- **Authentication credentials**: Scoped API Token (recommended) or App Password (legacy)
 
 ## Quick Start
 
@@ -120,13 +129,24 @@ Restart Claude Desktop, and you'll see the bitbucket server in the status bar.
 
 ### For Other AI Assistants
 
-Most AI assistants support MCP. Install the server globally:
+Most AI assistants support MCP. You can either:
 
+**Option 1: Use npx (recommended - always latest version):**
+Configure your AI assistant to run: `npx -y @aashari/mcp-server-atlassian-bitbucket`
+
+**Option 2: Install globally:**
 ```bash
 npm install -g @aashari/mcp-server-atlassian-bitbucket
 ```
 
 Then configure your AI assistant to use the MCP server with STDIO transport.
+
+**Supported AI assistants:**
+- Claude Desktop (official support)
+- Cursor AI
+- Continue.dev
+- Cline
+- Any MCP-compatible client
 
 ### Alternative: Configuration File
 
@@ -164,39 +184,88 @@ Create `~/.mcp/configs.json` for system-wide configuration:
 
 This MCP server provides 6 generic tools that can access any Bitbucket API endpoint:
 
-| Tool | Description |
-|------|-------------|
-| `bb_get` | GET any Bitbucket API endpoint (read data) |
-| `bb_post` | POST to any endpoint (create resources) |
-| `bb_put` | PUT to any endpoint (replace resources) |
-| `bb_patch` | PATCH any endpoint (partial updates) |
-| `bb_delete` | DELETE any endpoint (remove resources) |
-| `bb_clone` | Clone a repository locally |
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| `bb_get` | GET any Bitbucket API endpoint (read data) | `path`, `queryParams?`, `jq?`, `outputFormat?` |
+| `bb_post` | POST to any endpoint (create resources) | `path`, `body`, `queryParams?`, `jq?`, `outputFormat?` |
+| `bb_put` | PUT to any endpoint (replace resources) | `path`, `body`, `queryParams?`, `jq?`, `outputFormat?` |
+| `bb_patch` | PATCH any endpoint (partial updates) | `path`, `body`, `queryParams?`, `jq?`, `outputFormat?` |
+| `bb_delete` | DELETE any endpoint (remove resources) | `path`, `queryParams?`, `jq?`, `outputFormat?` |
+| `bb_clone` | Clone a repository locally | `workspaceSlug?`, `repoSlug`, `targetPath` |
+
+### Tool Parameters
+
+All API tools support these common parameters:
+
+- **`path`** (required): API endpoint path starting with `/` (the `/2.0` prefix is added automatically)
+- **`queryParams`** (optional): Key-value pairs for query parameters (e.g., `{"pagelen": "25", "page": "2"}`)
+- **`jq`** (optional): JMESPath expression to filter/transform the response - **highly recommended** to reduce token costs
+- **`outputFormat`** (optional): `"toon"` (default, 30-60% fewer tokens) or `"json"`
+- **`body`** (required for POST/PUT/PATCH): Request body as JSON object
 
 ### Common API Paths
+
+All paths automatically have `/2.0` prepended. Full Bitbucket Cloud REST API 2.0 reference: https://developer.atlassian.com/cloud/bitbucket/rest/
 
 **Workspaces & Repositories:**
 - `/workspaces` - List all workspaces
 - `/repositories/{workspace}` - List repos in workspace
 - `/repositories/{workspace}/{repo}` - Get repo details
 - `/repositories/{workspace}/{repo}/refs/branches` - List branches
+- `/repositories/{workspace}/{repo}/refs/branches/{branch_name}` - Get/delete branch
 - `/repositories/{workspace}/{repo}/commits` - List commits
+- `/repositories/{workspace}/{repo}/commits/{commit}` - Get commit details
 - `/repositories/{workspace}/{repo}/src/{commit}/{filepath}` - Get file content
 
 **Pull Requests:**
-- `/repositories/{workspace}/{repo}/pullrequests` - List PRs
-- `/repositories/{workspace}/{repo}/pullrequests/{id}` - Get PR details
+- `/repositories/{workspace}/{repo}/pullrequests` - List PRs (GET) or create PR (POST)
+- `/repositories/{workspace}/{repo}/pullrequests/{id}` - Get/update/delete PR
 - `/repositories/{workspace}/{repo}/pullrequests/{id}/diff` - Get PR diff
-- `/repositories/{workspace}/{repo}/pullrequests/{id}/comments` - List PR comments
-- `/repositories/{workspace}/{repo}/pullrequests/{id}/approve` - Approve PR (POST)
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/comments` - List/add PR comments
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/approve` - Approve PR (POST) or remove approval (DELETE)
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/request-changes` - Request changes (POST)
 - `/repositories/{workspace}/{repo}/pullrequests/{id}/merge` - Merge PR (POST)
+- `/repositories/{workspace}/{repo}/pullrequests/{id}/decline` - Decline PR (POST)
 
 **Comparisons:**
 - `/repositories/{workspace}/{repo}/diff/{source}..{destination}` - Compare branches/commits
 
+**Other Resources:**
+- `/repositories/{workspace}/{repo}/issues` - List/manage issues
+- `/repositories/{workspace}/{repo}/downloads` - List/manage downloads
+- `/repositories/{workspace}/{repo}/pipelines` - Access Bitbucket Pipelines
+- `/repositories/{workspace}/{repo}/deployments` - View deployments
+
+### TOON Output Format
+
+**What is TOON?** Token-Oriented Object Notation is a format optimized for LLMs that reduces token consumption by 30-60% compared to JSON. It uses tabular arrays and minimal syntax while preserving all data.
+
+**Default behavior:** All tools return TOON format by default. You can override this with `outputFormat: "json"` if needed.
+
+**Example comparison:**
+```
+JSON (verbose):
+{
+  "values": [
+    {"name": "repo1", "slug": "repo-1"},
+    {"name": "repo2", "slug": "repo-2"}
+  ]
+}
+
+TOON (efficient):
+values:
+  name  | slug
+  repo1 | repo-1
+  repo2 | repo-2
+```
+
+Learn more: https://github.com/toon-format/toon
+
 ### JMESPath Filtering
 
-All tools support optional JMESPath (`jq`) filtering to extract specific data:
+All tools support optional JMESPath (`jq`) filtering to extract specific data and reduce token costs further:
+
+**Important:** Always use `jq` to filter responses! Unfiltered API responses can be very large and expensive in terms of tokens.
 
 ```bash
 # Get just repository names
@@ -204,11 +273,30 @@ npx -y @aashari/mcp-server-atlassian-bitbucket get \
   --path "/repositories/myworkspace" \
   --jq "values[].name"
 
-# Get PR titles and states
+# Get PR titles and states (custom object shape)
 npx -y @aashari/mcp-server-atlassian-bitbucket get \
   --path "/repositories/myworkspace/myrepo/pullrequests" \
-  --jq "values[].{title: title, state: state}"
+  --jq "values[].{title: title, state: state, author: author.display_name}"
+
+# Get first result only
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/myworkspace" \
+  --jq "values[0]"
+
+# Explore schema with one item first, then filter
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/workspaces" \
+  --query-params '{"pagelen": "1"}'
 ```
+
+**Common JMESPath patterns:**
+- `values[*].fieldName` - Extract single field from all items
+- `values[*].{key1: field1, key2: field2}` - Create custom object shape
+- `values[0]` - Get first item only
+- `values[:5]` - Get first 5 items
+- `values[?state=='OPEN']` - Filter by condition
+
+Full JMESPath reference: https://jmespath.org
 
 ## Real-World Examples
 
@@ -236,23 +324,106 @@ Ask your AI assistant:
 - *"List all branches in the user-service repository"*
 - *"Show me the differences between commits abc123 and def456"*
 
-## CLI Commands
+## Advanced Usage
 
-The CLI mirrors the MCP tools for direct terminal access:
+### Cost Optimization Tips
+
+1. **Always use JMESPath filtering** - Extract only needed fields to minimize token usage
+2. **Use pagination wisely** - Set `pagelen` query parameter to limit results (e.g., `{"pagelen": "10"}`)
+3. **Explore schema first** - Fetch one item without filters to see available fields, then filter subsequent calls
+4. **Leverage TOON format** - Default TOON format saves 30-60% tokens vs JSON
+5. **Query parameters for filtering** - Use Bitbucket's `q` parameter for server-side filtering before results are returned
+
+### Query Parameter Examples
 
 ```bash
+# Filter PRs by state
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/workspace/repo/pullrequests" \
+  --query-params '{"state": "OPEN", "pagelen": "5"}' \
+  --jq "values[*].{id: id, title: title}"
+
+# Search PRs by title
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/workspace/repo/pullrequests" \
+  --query-params '{"q": "title~\"bug\""}' \
+  --jq "values[*].{id: id, title: title}"
+
+# Filter repositories by role
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/workspace" \
+  --query-params '{"role": "owner", "pagelen": "10"}'
+
+# Sort by updated date
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/workspace/repo/pullrequests" \
+  --query-params '{"sort": "-updated_on"}' \
+  --jq "values[*].{id: id, title: title, updated: updated_on}"
+```
+
+### Working with Large Responses
+
+When dealing with APIs that return large payloads:
+
+1. **Use sparse fieldsets** - Add `fields` query parameter: `{"fields": "values.name,values.slug"}`
+2. **Paginate results** - Use `pagelen` and `page` parameters
+3. **Filter at the source** - Use Bitbucket's `q` parameter for server-side filtering
+4. **Post-process with JQ** - Further filter the response with JMESPath
+
+Example combining all techniques:
+```bash
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/workspace/repo/pullrequests" \
+  --query-params '{"state": "OPEN", "pagelen": "10", "fields": "values.id,values.title,values.state"}' \
+  --jq "values[*].{id: id, title: title}"
+```
+
+### Best Practices for AI Interactions
+
+1. **Be specific with paths** - Use exact workspace/repo slugs (case-sensitive)
+2. **Test with CLI first** - Verify paths and authentication before using in AI context
+3. **Use descriptive JQ filters** - Extract meaningful field names for better AI understanding
+4. **Enable DEBUG for troubleshooting** - See exactly what's being sent to Bitbucket API
+5. **Check API limits** - Bitbucket Cloud has rate limits; use filtering to reduce calls
+
+## CLI Commands
+
+The CLI mirrors the MCP tools for direct terminal access. All commands return JSON output (not TOON - TOON is only for MCP mode).
+
+### Available Commands
+
+```bash
+# Get help
+npx -y @aashari/mcp-server-atlassian-bitbucket --help
+
 # GET request
-npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/workspaces"
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/workspaces" \
+  --jq "values[*].{name: name, slug: slug}"
+
+# GET with query parameters
+npx -y @aashari/mcp-server-atlassian-bitbucket get \
+  --path "/repositories/myworkspace/myrepo/pullrequests" \
+  --query-params '{"state": "OPEN", "pagelen": "10"}' \
+  --jq "values[*].{id: id, title: title}"
 
 # POST request (create a PR)
 npx -y @aashari/mcp-server-atlassian-bitbucket post \
   --path "/repositories/myworkspace/myrepo/pullrequests" \
-  --body '{"title": "My PR", "source": {"branch": {"name": "feature"}}, "destination": {"branch": {"name": "main"}}}'
+  --body '{"title": "My PR", "source": {"branch": {"name": "feature"}}, "destination": {"branch": {"name": "main"}}}' \
+  --jq "{id: id, title: title}"
 
-# PUT request (update resource)
+# POST with query parameters
+npx -y @aashari/mcp-server-atlassian-bitbucket post \
+  --path "/repositories/myworkspace/myrepo/pullrequests/42/comments" \
+  --body '{"content": {"raw": "Looks good!"}}' \
+  --query-params '{"fields": "id,content"}' \
+  --jq "{id: id, content: content.raw}"
+
+# PUT request (replace resource)
 npx -y @aashari/mcp-server-atlassian-bitbucket put \
   --path "/repositories/myworkspace/myrepo" \
-  --body '{"description": "Updated description"}'
+  --body '{"description": "Updated description", "is_private": true}'
 
 # PATCH request (partial update)
 npx -y @aashari/mcp-server-atlassian-bitbucket patch \
@@ -265,32 +436,118 @@ npx -y @aashari/mcp-server-atlassian-bitbucket delete \
 
 # Clone repository
 npx -y @aashari/mcp-server-atlassian-bitbucket clone \
-  --workspace myworkspace \
-  --repo myrepo \
-  --target-dir ./my-local-clone
+  --workspace-slug myworkspace \
+  --repo-slug myrepo \
+  --target-path /absolute/path/to/parent/directory
 ```
+
+### CLI Options
+
+**For `get` and `delete` commands:**
+- `-p, --path <path>` (required) - API endpoint path
+- `-q, --query-params <json>` (optional) - Query parameters as JSON string
+- `--jq <expression>` (optional) - JMESPath filter expression
+
+**For `post`, `put`, and `patch` commands:**
+- `-p, --path <path>` (required) - API endpoint path
+- `-b, --body <json>` (required) - Request body as JSON string
+- `-q, --query-params <json>` (optional) - Query parameters as JSON string
+- `--jq <expression>` (optional) - JMESPath filter expression
+
+**For `clone` command:**
+- `--workspace-slug <slug>` (optional) - Workspace slug (uses default if not provided)
+- `--repo-slug <slug>` (required) - Repository slug
+- `--target-path <path>` (required) - Absolute path to parent directory where repo will be cloned
+
+## Debugging
+
+### Enable Debug Mode
+
+Set the `DEBUG` environment variable to see detailed logging:
+
+```bash
+# For CLI testing
+DEBUG=true npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/workspaces"
+
+# For Claude Desktop - add to config
+{
+  "mcpServers": {
+    "bitbucket": {
+      "command": "npx",
+      "args": ["-y", "@aashari/mcp-server-atlassian-bitbucket"],
+      "env": {
+        "DEBUG": "true",
+        "ATLASSIAN_USER_EMAIL": "...",
+        "ATLASSIAN_API_TOKEN": "..."
+      }
+    }
+  }
+}
+```
+
+**Log files:** When running in MCP mode, logs are written to `~/.mcp/data/@aashari-mcp-server-atlassian-bitbucket.[session-id].log`
+
+### Test with HTTP Mode
+
+For interactive debugging, run the server in HTTP mode and use the MCP Inspector:
+
+```bash
+# Set credentials first
+export ATLASSIAN_USER_EMAIL="your.email@company.com"
+export ATLASSIAN_API_TOKEN="your_token"
+export DEBUG=true
+
+# Start HTTP server with MCP Inspector
+npx -y @aashari/mcp-server-atlassian-bitbucket
+# Then in another terminal:
+PORT=3000 npm run mcp:inspect
+```
+
+This opens a visual interface to test tools and see request/response data.
+
+### Common Issues
+
+**Server not appearing in Claude Desktop:**
+1. Check config file syntax (valid JSON)
+2. Restart Claude Desktop completely
+3. Check Claude Desktop logs: `~/Library/Logs/Claude/mcp*.log` (macOS)
+
+**Tools not working:**
+1. Enable DEBUG mode to see detailed errors
+2. Test with CLI first to isolate MCP vs credentials issues
+3. Verify API paths are correct (case-sensitive)
 
 ## Troubleshooting
 
 ### "Authentication failed" or "403 Forbidden"
 
 1. **Choose the right authentication method**:
-   - **Standard Atlassian method**: Use your Atlassian account email + API token (works with any Atlassian service)
-   - **Bitbucket-specific method**: Use your Bitbucket username + App password (Bitbucket only)
+   - **Standard Atlassian method** (recommended): Use your Atlassian account email + API token (works with any Atlassian service)
+   - **Bitbucket-specific method** (legacy): Use your Bitbucket username + App password (Bitbucket only)
 
 2. **For Scoped API Tokens** (recommended):
    - Go to [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens)
    - Make sure your token is still active and has the right scopes
    - Required scopes: `repository`, `workspace` (add `pullrequest` for PR management)
+   - Token should start with `ATATT`
 
 3. **For Bitbucket App Passwords** (legacy):
    - Go to [Bitbucket App Passwords](https://bitbucket.org/account/settings/app-passwords/)
    - Make sure your app password has the right permissions
+   - Remember: App passwords will be deprecated by June 2026
 
 4. **Verify your credentials**:
    ```bash
+   # Test credentials with CLI
+   export ATLASSIAN_USER_EMAIL="your.email@company.com"
+   export ATLASSIAN_API_TOKEN="your_token"
    npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/workspaces"
    ```
+
+5. **Environment variable naming**:
+   - Use `ATLASSIAN_USER_EMAIL` + `ATLASSIAN_API_TOKEN` for scoped tokens
+   - Use `ATLASSIAN_BITBUCKET_USERNAME` + `ATLASSIAN_BITBUCKET_APP_PASSWORD` for app passwords
+   - Don't use `ATLASSIAN_SITE_NAME` - it's not needed for Bitbucket Cloud
 
 ### "Resource not found" or "404"
 
@@ -351,28 +608,62 @@ Yes! This tool:
 - Never sends your data to third parties
 - Only accesses what you give it permission to access
 
+## What's New
+
+### Version 2.2.0 (December 2024)
+- Modernized to MCP SDK v1.23.0 with `registerTool` API
+- Added raw response logging with truncation for large API responses
+- Improved debugging capabilities
+
+### Version 2.1.0 (November 2024)
+- **TOON output format** - 30-60% fewer tokens than JSON
+- Token-efficient responses by default with JSON fallback option
+- Significant cost reduction for LLM interactions
+
+### Version 2.0.0 (November 2024) - Breaking Changes
+- Replaced 20+ specific tools with 6 generic HTTP method tools
+- Simplified architecture: ~14,000 fewer lines of code
+- Future-proof: new API endpoints work without code changes
+- Added optional JMESPath filtering for all responses
+
 ## Migration from v1.x
 
-Version 2.0 replaces 20+ specific tools with 6 generic HTTP method tools. If you're upgrading from v1.x:
+Version 2.0 represents a major architectural change. If you're upgrading from v1.x:
 
-**Before (v1.x):**
+**Before (v1.x) - 20+ specific tools:**
 ```
 bb_ls_workspaces, bb_get_workspace, bb_ls_repos, bb_get_repo,
-bb_list_branches, bb_get_commit_history, bb_get_file,
-bb_ls_prs, bb_get_pr, bb_add_pr, bb_approve_pr, ...
+bb_list_branches, bb_add_branch, bb_get_commit_history, bb_get_file,
+bb_ls_prs, bb_get_pr, bb_add_pr, bb_update_pr, bb_approve_pr, bb_reject_pr,
+bb_ls_pr_comments, bb_add_pr_comment, bb_diff_branches, bb_diff_commits, bb_search
 ```
 
-**After (v2.0):**
+**After (v2.0+) - 6 generic tools:**
 ```
 bb_get, bb_post, bb_put, bb_patch, bb_delete, bb_clone
 ```
 
-**Migration examples:**
-- `bb_ls_workspaces` → `bb_get` with path `/workspaces`
-- `bb_ls_repos` → `bb_get` with path `/repositories/{workspace}`
-- `bb_get_pr` → `bb_get` with path `/repositories/{workspace}/{repo}/pullrequests/{id}`
-- `bb_add_pr` → `bb_post` with path `/repositories/{workspace}/{repo}/pullrequests`
-- `bb_approve_pr` → `bb_post` with path `/repositories/{workspace}/{repo}/pullrequests/{id}/approve`
+### Migration Examples
+
+| v1.x Tool | v2.0+ Equivalent |
+|-----------|------------------|
+| `bb_ls_workspaces()` | `bb_get(path: "/workspaces")` |
+| `bb_ls_repos(workspace: "myteam")` | `bb_get(path: "/repositories/myteam")` |
+| `bb_get_repo(workspace: "myteam", repo: "myrepo")` | `bb_get(path: "/repositories/myteam/myrepo")` |
+| `bb_list_branches(workspace: "myteam", repo: "myrepo")` | `bb_get(path: "/repositories/myteam/myrepo/refs/branches")` |
+| `bb_add_branch(...)` | `bb_post(path: "/repositories/.../refs/branches", body: {...})` |
+| `bb_ls_prs(workspace: "myteam", repo: "myrepo")` | `bb_get(path: "/repositories/myteam/myrepo/pullrequests")` |
+| `bb_get_pr(workspace: "myteam", repo: "myrepo", id: 42)` | `bb_get(path: "/repositories/myteam/myrepo/pullrequests/42")` |
+| `bb_add_pr(...)` | `bb_post(path: "/repositories/.../pullrequests", body: {...})` |
+| `bb_update_pr(...)` | `bb_patch(path: "/repositories/.../pullrequests/42", body: {...})` |
+| `bb_approve_pr(workspace: "myteam", repo: "myrepo", id: 42)` | `bb_post(path: "/repositories/myteam/myrepo/pullrequests/42/approve", body: {})` |
+| `bb_diff_branches(...)` | `bb_get(path: "/repositories/.../diff/branch1..branch2")` |
+
+### Key Changes
+1. **All tools now require explicit paths** - more verbose but more flexible
+2. **Use JMESPath filtering** - extract only what you need to reduce tokens
+3. **TOON format by default** - 30-60% fewer tokens (can override with `outputFormat: "json"`)
+4. **Direct Bitbucket API access** - any API endpoint works, no code changes needed for new features
 
 ## Support
 
