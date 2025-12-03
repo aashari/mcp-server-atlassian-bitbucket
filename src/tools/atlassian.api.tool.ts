@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Logger } from '../utils/logger.util.js';
 import { formatErrorForMcpTool } from '../utils/error.util.js';
+import { truncateForAI } from '../utils/formatter.util.js';
 import {
 	GetApiToolArgs,
 	type GetApiToolArgsType,
@@ -31,7 +32,9 @@ toolLogger.debug('Bitbucket API tool initialized');
  */
 function createReadHandler(
 	methodName: string,
-	handler: (options: GetApiToolArgsType) => Promise<{ content: string }>,
+	handler: (
+		options: GetApiToolArgsType,
+	) => Promise<{ content: string; rawResponsePath?: string | null }>,
 ) {
 	return async (args: Record<string, unknown>) => {
 		const methodLogger = Logger.forContext(
@@ -51,7 +54,10 @@ function createReadHandler(
 				content: [
 					{
 						type: 'text' as const,
-						text: result.content,
+						text: truncateForAI(
+							result.content,
+							result.rawResponsePath,
+						),
 					},
 				],
 			};
@@ -71,7 +77,9 @@ function createReadHandler(
  */
 function createWriteHandler(
 	methodName: string,
-	handler: (options: RequestWithBodyArgsType) => Promise<{ content: string }>,
+	handler: (
+		options: RequestWithBodyArgsType,
+	) => Promise<{ content: string; rawResponsePath?: string | null }>,
 ) {
 	return async (args: Record<string, unknown>) => {
 		const methodLogger = Logger.forContext(
@@ -94,7 +102,10 @@ function createWriteHandler(
 				content: [
 					{
 						type: 'text' as const,
-						text: result.content,
+						text: truncateForAI(
+							result.content,
+							result.rawResponsePath,
+						),
 					},
 				],
 			};

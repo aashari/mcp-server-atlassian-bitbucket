@@ -126,7 +126,7 @@ async function handleRequest(
 		methodLogger.debug('Successfully received response');
 
 		// Apply JQ filter if provided, otherwise return raw data
-		const result = applyJqFilter(response, options.jq);
+		const result = applyJqFilter(response.data, options.jq);
 
 		// Convert to output format (TOON by default, JSON if requested)
 		const useToon = options.outputFormat !== 'json';
@@ -134,6 +134,7 @@ async function handleRequest(
 
 		return {
 			content,
+			rawResponsePath: response.rawResponsePath,
 		};
 	} catch (error) {
 		throw handleControllerError(error, {

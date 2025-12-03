@@ -100,12 +100,12 @@ describe('Transport Utility', () => {
 			);
 
 			// Verify the response structure from real API
-			expect(result).toHaveProperty('values');
-			expect(Array.isArray(result.values)).toBe(true);
+			expect(result.data).toHaveProperty('values');
+			expect(Array.isArray(result.data.values)).toBe(true);
 			// Different property names than mocked data to match actual API response
-			if (result.values.length > 0) {
+			if (result.data.values.length > 0) {
 				// Verify an actual workspace result
-				const workspace = result.values[0];
+				const workspace = result.data.values[0];
 				expect(workspace).toHaveProperty('uuid');
 				expect(workspace).toHaveProperty('name');
 				expect(workspace).toHaveProperty('slug');
@@ -142,8 +142,8 @@ describe('Transport Utility', () => {
 			);
 
 			// Verify the response structure from real API
-			expect(result).toHaveProperty('values');
-			expect(Array.isArray(result.values)).toBe(true);
+			expect(result.data).toHaveProperty('values');
+			expect(Array.isArray(result.data.values)).toBe(true);
 		}, 15000); // Increased timeout for real API call
 
 		it('should support custom request options', async () => {
@@ -170,9 +170,9 @@ describe('Transport Utility', () => {
 			);
 
 			// Verify the response structure from real API
-			expect(result).toHaveProperty('values');
-			expect(Array.isArray(result.values)).toBe(true);
-			expect(result.values.length).toBeLessThanOrEqual(1); // Should respect pagelen=1
+			expect(result.data).toHaveProperty('values');
+			expect(Array.isArray(result.data.values)).toBe(true);
+			expect(result.data.values.length).toBeLessThanOrEqual(1); // Should respect pagelen=1
 		}, 15000); // Increased timeout for real API call
 	});
 });

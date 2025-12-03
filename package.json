@@ -16,6 +16,7 @@
     "build": "tsc",
     "prepare": "npm run build && node scripts/ensure-executable.js",
     "postinstall": "node scripts/ensure-executable.js",
+    "clean": "rm -rf dist coverage",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:cli": "jest src/cli/.*\\.cli\\.test\\.ts --runInBand --testTimeout=60000",
@@ -33,7 +34,8 @@
     "dev:server": "DEBUG=true npm run build && npx @modelcontextprotocol/inspector -e DEBUG=true node dist/index.js",
     "dev:cli": "DEBUG=true npm run build && DEBUG=true node dist/index.js",
     "start:server": "npm run build && npx @modelcontextprotocol/inspector node dist/index.js",
-    "start:cli": "npm run build && node dist/index.js"
+    "start:cli": "npm run build && node dist/index.js",
+    "cli": "npm run build && node dist/index.js"
   },
   "keywords": [
     "mcp",
@@ -59,7 +61,7 @@
     "cli",
     "mcp-inspector"
   ],
-  "author": "",
+  "author": "Andi Ashari",
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -110,7 +112,7 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
+      "<rootDir>/src/utils/jest.setup.ts"
     ],
     "testMatch": [
       "**/src/**/*.test.ts"

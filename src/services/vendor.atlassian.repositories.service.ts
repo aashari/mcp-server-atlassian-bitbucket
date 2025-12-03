@@ -143,10 +143,12 @@ async function list(
 
 	methodLogger.debug(`Sending request to: ${path}`);
 	try {
-		const rawData = await fetchAtlassian(credentials, path);
+		const response = await fetchAtlassian(credentials, path);
 		// Validate response with Zod schema
 		try {
-			const validatedData = RepositoriesResponseSchema.parse(rawData);
+			const validatedData = RepositoriesResponseSchema.parse(
+				response.data,
+			);
 
 			// Validate pagination limits to prevent excessive data exposure (CWE-770)
 			if (!validatePaginationLimits(validatedData, 'listRepositories')) {
@@ -239,11 +241,11 @@ async function get(params: GetRepositoryParams): Promise<Repository> {
 
 	methodLogger.debug(`Sending request to: ${path}`);
 	try {
-		const rawData = await fetchAtlassian(credentials, path);
+		const response = await fetchAtlassian(credentials, path);
 
 		// Validate response with Zod schema
 		try {
-			const validatedData = RepositorySchema.parse(rawData);
+			const validatedData = RepositorySchema.parse(response.data);
 			return validatedData;
 		} catch (error) {
 			if (error instanceof z.ZodError) {
@@ -345,10 +347,10 @@ async function listCommits(
 
 	methodLogger.debug(`Sending commit history request to: ${path}`);
 	try {
-		const rawData = await fetchAtlassian(credentials, path);
+		const response = await fetchAtlassian(credentials, path);
 		// Validate response with Zod schema
 		try {
-			const validatedData = PaginatedCommitsSchema.parse(rawData);
+			const validatedData = PaginatedCommitsSchema.parse(response.data);
 			return validatedData;
 		} catch (error) {
 			if (error instanceof z.ZodError) {
@@ -425,14 +427,14 @@ async function createBranch(params: CreateBranchParams): Promise<BranchRef> {
 
 	methodLogger.debug(`Sending POST request to: ${path}`);
 	try {
-		const rawData = await fetchAtlassian<BranchRef>(credentials, path, {
+		const response = await fetchAtlassian<BranchRef>(credentials, path, {
 			method: 'POST',
 			body: requestBody,
 		});
 
 		// Validate response with Zod schema
 		try {
-			const validatedData = BranchRefSchema.parse(rawData);
+			const validatedData = BranchRefSchema.parse(response.data);
 			methodLogger.debug('Branch created successfully:', validatedData);
 			return validatedData;
 		} catch (error) {
@@ -522,12 +524,12 @@ async function getFileContent(params: GetFileContentParams): Promise<string> {
 	try {
 		// Use fetchAtlassian to get the file content directly as string
 		// The function already detects text/plain content type and returns it appropriately
-		const fileContent = await fetchAtlassian<string>(credentials, path);
+		const response = await fetchAtlassian<string>(credentials, path);
 
 		methodLogger.debug(
-			`Successfully retrieved file content (${fileContent.length} characters)`,
+			`Successfully retrieved file content (${response.data.length} characters)`,
 		);
-		return fileContent;
+		return response.data;
 	} catch (error) {
 		if (error instanceof McpError) {
 			throw error;
@@ -615,10 +617,10 @@ async function listBranches(
 
 	methodLogger.debug(`Sending branches request to: ${path}`);
 	try {
-		const rawData = await fetchAtlassian(credentials, path);
+		const response = await fetchAtlassian(credentials, path);
 		// Validate response with Zod schema
 		try {
-			const validatedData = BranchesResponseSchema.parse(rawData);
+			const validatedData = BranchesResponseSchema.parse(response.data);
 			return validatedData;
 		} catch (error) {
 			if (error instanceof z.ZodError) {

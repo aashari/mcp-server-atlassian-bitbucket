@@ -118,11 +118,12 @@ async function list(
 
 	methodLogger.debug(`Sending request to: ${path}`);
 	try {
-		const rawData = await fetchAtlassian(credentials, path);
+		const response = await fetchAtlassian(credentials, path);
 		// Validate response with Zod schema
 		try {
-			const validatedData =
-				WorkspacePermissionsResponseSchema.parse(rawData);
+			const validatedData = WorkspacePermissionsResponseSchema.parse(
+				response.data,
+			);
 			return validatedData;
 		} catch (error) {
 			if (error instanceof z.ZodError) {
@@ -185,10 +186,10 @@ async function get(
 
 	methodLogger.debug(`Sending request to: ${path}`);
 	try {
-		const rawData = await fetchAtlassian(credentials, path);
+		const response = await fetchAtlassian(credentials, path);
 		// Validate response with Zod schema
 		try {
-			const validatedData = WorkspaceDetailedSchema.parse(rawData);
+			const validatedData = WorkspaceDetailedSchema.parse(response.data);
 			return validatedData;
 		} catch (error) {
 			if (error instanceof z.ZodError) {
