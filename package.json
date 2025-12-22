@@ -103,7 +103,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jmespath": "^0.16.0",
-    "zod": "^4.1.13"
+    "zod": "^4.2.1"
   },
   "directories": {
     "example": "examples"
