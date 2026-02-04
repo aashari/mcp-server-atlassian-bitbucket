@@ -12,6 +12,7 @@ jobs:
         runs-on: ubuntu-latest
         # Permissions needed for creating releases, updating issues, and publishing packages
         permissions:
+            id-token: write # Needed for npm OIDC trusted publishing
             contents: write # Needed to create releases and tags
             issues: write # Needed to comment on issues
             pull-requests: write # Needed to comment on pull requests
@@ -56,9 +57,9 @@ jobs:
             - name: Semantic Release
               id: semantic
               env:
-                  # Tokens needed for GitHub and npm authentication
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For creating releases and commenting
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # For publishing to npm
+                  # GitHub token for creating releases and commenting
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # npm OIDC trusted publishing (no token needed)
               run: |
                   echo "Running semantic-release for version bump and npm publishing"
                   npx semantic-release
