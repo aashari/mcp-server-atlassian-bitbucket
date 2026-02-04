@@ -1,3 +1,19 @@
+# [3.0.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.3.0...v3.0.0) (2026-02-04)
+
+
+### Features
+
+* migrate to npm OIDC trusted publishing and modernize dependencies ([96475dd](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/96475dda6ca568ca460857b102392fbfaa9c68f0))
+
+
+### BREAKING CHANGES
+
+* Publishing workflow now requires OpenID Connect (OIDC) authentication. GitHub Actions workflow permissions updated to include id-token: write for secure npm authentication.
+
+Dependencies updated: @modelcontextprotocol/sdk 1.23.0 → 1.25.3, zod 4.1.13 → 4.3.6, express 5.1.0 → 5.2.1, commander 14.0.2 → 14.0.3, @toon-format/toon 2.0.1 → 2.1.0
+
+For configuration details, see docs/OIDC-TRUSTED-PUBLISHING-SETUP.md
+
 # [2.3.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.2.0...v2.3.0) (2025-12-03)
 
 
