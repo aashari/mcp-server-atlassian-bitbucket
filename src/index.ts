@@ -13,6 +13,7 @@ import cors from 'cors';
 // Import tools
 import atlassianApi from './tools/atlassian.api.tool.js';
 import atlassianRepositories from './tools/atlassian.repositories.tool.js';
+import { getAtlassianCredentials } from './utils/transport.util.js';
 
 // Create a contextualized logger for this file
 const indexLogger = Logger.forContext('index.ts');
@@ -43,6 +44,33 @@ export async function startServer(
 
 	if (config.getBoolean('DEBUG')) {
 		serverLogger.debug('Debug mode enabled');
+	}
+
+	// Validate authentication credentials before starting the server
+	const credentials = getAtlassianCredentials();
+	if (!credentials) {
+		const errorMessage = [
+			'ERROR: Authentication credentials are missing.',
+			'',
+			'The Bitbucket MCP server requires valid credentials to start.',
+			'Please configure one of the following:',
+			'',
+			'  Option 1 - Atlassian credentials:',
+			'    ATLASSIAN_USER_EMAIL=<your-email>',
+			'    ATLASSIAN_API_TOKEN=<your-api-token>',
+			'',
+			'  Option 2 - Bitbucket App Password:',
+			'    ATLASSIAN_BITBUCKET_USERNAME=<your-username>',
+			'    ATLASSIAN_BITBUCKET_APP_PASSWORD=<your-app-password>',
+			'',
+			'Set these as environment variables, in a .env file, or in ~/.mcp/configs.json',
+		].join('\n');
+
+		process.stderr.write(errorMessage + '\n');
+		serverLogger.error(
+			'Server startup aborted: authentication credentials are missing',
+		);
+		process.exit(1);
 	}
 
 	serverLogger.info(`Initializing Bitbucket MCP server v${VERSION}`);
