@@ -1,7 +1,6 @@
 import { createApiError } from './error.util.js';
 import { Logger } from './logger.util.js';
 import { getDeepOriginalError } from './error.util.js';
-import { McpError } from './error.util.js';
 
 /**
  * Standard error codes for consistent handling
@@ -538,55 +537,4 @@ export function handleControllerError(
 
 	// Throw an appropriate API error with the user-friendly message
 	throw createApiError(message, finalStatusCode, error);
-}
-
-/**
- * Handles errors from CLI commands
- * Logs the error and exits the process with appropriate exit code
- *
- * @param error The error to handle
- */
-export function handleCliError(error: unknown): never {
-	const logger = Logger.forContext(
-		'utils/error-handler.util.ts',
-		'handleCliError',
-	);
-
-	logger.error('CLI error:', error);
-
-	// Process different error types
-	if (error instanceof McpError) {
-		// Format user-friendly error message for MCP errors
-		console.error(`Error: ${error.message}`);
-
-		// Use specific exit codes based on error type
-		switch (error.errorType) {
-			case 'AUTHENTICATION_REQUIRED':
-				process.exit(2);
-				break; // Not strictly needed after process.exit but added for clarity
-			case 'NOT_FOUND':
-				process.exit(3);
-				break;
-			case 'VALIDATION_ERROR':
-				process.exit(4);
-				break;
-			case 'RATE_LIMIT_EXCEEDED':
-				process.exit(5);
-				break;
-			case 'API_ERROR':
-				process.exit(6);
-				break;
-			default:
-				process.exit(1);
-				break;
-		}
-	} else if (error instanceof Error) {
-		// Standard Error objects
-		console.error(`Error: ${error.message}`);
-		process.exit(1);
-	} else {
-		// Unknown error types
-		console.error(`Unknown error occurred: ${String(error)}`);
-		process.exit(1);
-	}
 }

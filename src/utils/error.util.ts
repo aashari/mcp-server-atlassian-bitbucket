@@ -260,7 +260,7 @@ export function handleCliError(error: unknown): never {
 	const cliLines: string[] = [];
 
 	// Primary error headline
-	cliLines.push(`❌  ${mcpError.message}`);
+	cliLines.push(`Error: ${mcpError.message}`);
 
 	// Status code (if any)
 	if (mcpError.statusCode) {

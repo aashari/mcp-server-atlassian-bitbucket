@@ -51,6 +51,13 @@ export async function handleCloneRepository(
 			throw new Error('Target path is required');
 		}
 
+		// Validate repoSlug to prevent path traversal (CWE-22)
+		if (!/^[a-zA-Z0-9._-]+$/.test(repoSlug)) {
+			throw new Error(
+				'Invalid repository slug: must contain only alphanumeric characters, hyphens, underscores, and dots.',
+			);
+		}
+
 		// Normalize and resolve the target path
 		// If it's a relative path, convert it to absolute based on current working directory
 		const processedTargetPath = path.isAbsolute(targetPath)
@@ -62,44 +69,44 @@ export async function handleCloneRepository(
 		);
 
 		// Validate directory access and permissions before proceeding
+		let dirExists = false;
 		try {
-			// Check if target directory exists
-			try {
-				await fs.access(processedTargetPath, constants.F_OK);
-				methodLogger.debug(
-					`Target directory exists: ${processedTargetPath}`,
+			await fs.access(processedTargetPath, constants.F_OK);
+			dirExists = true;
+		} catch (err: unknown) {
+			const code = (err as NodeJS.ErrnoException).code;
+			if (code !== 'ENOENT') {
+				throw new Error(
+					`Cannot access target directory ${processedTargetPath}: ${(err as Error).message}`,
 				);
-
-				// If it exists, check if we have write permission
-				try {
-					await fs.access(processedTargetPath, constants.W_OK);
-					methodLogger.debug(
-						`Have write permission to: ${processedTargetPath}`,
-					);
-				} catch {
-					throw new Error(
-						`Permission denied: You don't have write access to the target directory: ${processedTargetPath}`,
-					);
-				}
-			} catch {
-				// Directory doesn't exist, try to create it
-				methodLogger.debug(
-					`Target directory doesn't exist, creating: ${processedTargetPath}`,
-				);
-				try {
-					await fs.mkdir(processedTargetPath, { recursive: true });
-					methodLogger.debug(
-						`Successfully created directory: ${processedTargetPath}`,
-					);
-				} catch (mkdirError) {
-					throw new Error(
-						`Failed to create target directory ${processedTargetPath}: ${(mkdirError as Error).message}. Please ensure you have write permissions to the parent directory.`,
-					);
-				}
 			}
-		} catch (accessError) {
-			methodLogger.error('Path access error:', accessError);
-			throw accessError;
+		}
+
+		if (dirExists) {
+			try {
+				await fs.access(processedTargetPath, constants.W_OK);
+				methodLogger.debug(
+					`Have write permission to: ${processedTargetPath}`,
+				);
+			} catch {
+				throw new Error(
+					`Permission denied: You don't have write access to the target directory: ${processedTargetPath}`,
+				);
+			}
+		} else {
+			methodLogger.debug(
+				`Target directory doesn't exist, creating: ${processedTargetPath}`,
+			);
+			try {
+				await fs.mkdir(processedTargetPath, { recursive: true });
+				methodLogger.debug(
+					`Successfully created directory: ${processedTargetPath}`,
+				);
+			} catch (mkdirError) {
+				throw new Error(
+					`Failed to create target directory ${processedTargetPath}: ${(mkdirError as Error).message}. Please ensure you have write permissions to the parent directory.`,
+				);
+			}
 		}
 
 		// Get repository details to determine clone URL
@@ -168,13 +175,13 @@ export async function handleCloneRepository(
 			);
 		}
 
-		// Execute git clone command
+		// Execute git clone command (uses execFile to prevent command injection)
 		methodLogger.debug(`Cloning from URL (${cloneProtocol}): ${cloneUrl}`);
-		const command = `git clone ${cloneUrl} "${targetDir}"`;
 
 		try {
 			const result = await executeShellCommand(
-				command,
+				'git',
+				['clone', cloneUrl, targetDir],
 				'cloning repository',
 			);
 

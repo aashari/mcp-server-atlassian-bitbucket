@@ -14,28 +14,19 @@
   },
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf dist coverage",
     "prepare": "npm run build && node scripts/ensure-executable.js",
     "postinstall": "node scripts/ensure-executable.js",
-    "clean": "rm -rf dist coverage",
+    "lint": "eslint src --ext .ts --config eslint.config.mjs",
+    "format": "prettier --write 'src/**/*.ts' 'scripts/**/*.js'",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:cli": "jest src/cli/.*\\.cli\\.test\\.ts --runInBand --testTimeout=60000",
-    "lint": "eslint src --ext .ts --config eslint.config.mjs",
-    "format": "prettier --write 'src/**/*.ts' 'scripts/**/*.js'",
-    "publish:npm": "npm publish",
-    "update:check": "npx npm-check-updates",
-    "update:deps": "npx npm-check-updates -u && npm install --legacy-peer-deps",
     "update:version": "node scripts/update-version.js",
+    "cli": "npm run build && node dist/index.js",
     "mcp:stdio": "TRANSPORT_MODE=stdio npm run build && node dist/index.js",
     "mcp:http": "TRANSPORT_MODE=http npm run build && node dist/index.js",
-    "mcp:inspect": "TRANSPORT_MODE=http npm run build && (node dist/index.js &) && sleep 2 && npx @modelcontextprotocol/inspector http://localhost:3000/mcp",
-    "dev:stdio": "npm run build && npx @modelcontextprotocol/inspector -e TRANSPORT_MODE=stdio -e DEBUG=true node dist/index.js",
-    "dev:http": "DEBUG=true TRANSPORT_MODE=http npm run build && node dist/index.js",
-    "dev:server": "DEBUG=true npm run build && npx @modelcontextprotocol/inspector -e DEBUG=true node dist/index.js",
-    "dev:cli": "DEBUG=true npm run build && DEBUG=true node dist/index.js",
-    "start:server": "npm run build && npx @modelcontextprotocol/inspector node dist/index.js",
-    "start:cli": "npm run build && node dist/index.js",
-    "cli": "npm run build && node dist/index.js"
+    "mcp:inspect": "TRANSPORT_MODE=http npm run build && (node dist/index.js &) && sleep 2 && npx @modelcontextprotocol/inspector http://localhost:3000/mcp"
   },
   "keywords": [
     "mcp",
@@ -96,7 +87,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@toon-format/toon": "^2.1.0",
     "commander": "^14.0.3",
     "cors": "^2.8.5",

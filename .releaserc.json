@@ -24,7 +24,8 @@
 					"package.json",
 					"CHANGELOG.md",
 					"src/index.ts",
-					"src/cli/index.ts"
+					"src/cli/index.ts",
+					"src/utils/constants.util.ts"
 				],
 				"message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
 			}

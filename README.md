@@ -5,8 +5,6 @@ Transform how you work with Bitbucket by connecting Claude, Cursor AI, and other
 [![NPM Version](https://img.shields.io/npm/v/@aashari/mcp-server-atlassian-bitbucket)](https://www.npmjs.com/package/@aashari/mcp-server-atlassian-bitbucket)
 [![License](https://img.shields.io/npm/l/@aashari/mcp-server-atlassian-bitbucket)](https://github.com/aashari/mcp-server-atlassian-bitbucket/blob/main/LICENSE)
 
-**Current Version:** 2.2.0
-
 ## What You Can Do
 
 - **Ask AI about your code**: "What's the latest commit in my main repository?"
@@ -607,24 +605,6 @@ Yes! This tool:
 - Uses your own Bitbucket credentials
 - Never sends your data to third parties
 - Only accesses what you give it permission to access
-
-## What's New
-
-### Version 2.2.0 (December 2024)
-- Modernized to MCP SDK v1.23.0 with `registerTool` API
-- Added raw response logging with truncation for large API responses
-- Improved debugging capabilities
-
-### Version 2.1.0 (November 2024)
-- **TOON output format** - 30-60% fewer tokens than JSON
-- Token-efficient responses by default with JSON fallback option
-- Significant cost reduction for LLM interactions
-
-### Version 2.0.0 (November 2024) - Breaking Changes
-- Replaced 20+ specific tools with 6 generic HTTP method tools
-- Simplified architecture: ~14,000 fewer lines of code
-- Future-proof: new API endpoints work without code changes
-- Added optional JMESPath filtering for all responses
 
 ## Migration from v1.x
 

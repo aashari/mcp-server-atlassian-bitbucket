@@ -66,13 +66,18 @@ function registerTools(server: McpServer) {
 	);
 	registerLogger.debug('Registering Repository tools...');
 
-	// Register the clone repository tool using modern registerTool API
 	server.registerTool(
 		'bb_clone',
 		{
 			title: 'Clone Bitbucket Repository',
 			description: BB_CLONE_DESCRIPTION,
 			inputSchema: CloneRepositoryToolArgs,
+			annotations: {
+				readOnlyHint: false,
+				destructiveHint: false,
+				idempotentHint: false,
+				openWorldHint: true,
+			},
 		},
 		handleRepoClone,
 	);

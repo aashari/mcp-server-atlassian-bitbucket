@@ -255,57 +255,82 @@ function registerTools(server: McpServer) {
 	);
 	registerLogger.debug('Registering API tools...');
 
-	// Register the GET tool using modern registerTool API
 	server.registerTool(
 		'bb_get',
 		{
 			title: 'Bitbucket GET Request',
 			description: BB_GET_DESCRIPTION,
 			inputSchema: GetApiToolArgs,
+			annotations: {
+				readOnlyHint: true,
+				destructiveHint: false,
+				idempotentHint: true,
+				openWorldHint: true,
+			},
 		},
 		get,
 	);
 
-	// Register the POST tool using modern registerTool API
 	server.registerTool(
 		'bb_post',
 		{
 			title: 'Bitbucket POST Request',
 			description: BB_POST_DESCRIPTION,
 			inputSchema: RequestWithBodyArgs,
+			annotations: {
+				readOnlyHint: false,
+				destructiveHint: false,
+				idempotentHint: false,
+				openWorldHint: true,
+			},
 		},
 		post,
 	);
 
-	// Register the PUT tool using modern registerTool API
 	server.registerTool(
 		'bb_put',
 		{
 			title: 'Bitbucket PUT Request',
 			description: BB_PUT_DESCRIPTION,
 			inputSchema: RequestWithBodyArgs,
+			annotations: {
+				readOnlyHint: false,
+				destructiveHint: false,
+				idempotentHint: true,
+				openWorldHint: true,
+			},
 		},
 		put,
 	);
 
-	// Register the PATCH tool using modern registerTool API
 	server.registerTool(
 		'bb_patch',
 		{
 			title: 'Bitbucket PATCH Request',
 			description: BB_PATCH_DESCRIPTION,
 			inputSchema: RequestWithBodyArgs,
+			annotations: {
+				readOnlyHint: false,
+				destructiveHint: false,
+				idempotentHint: false,
+				openWorldHint: true,
+			},
 		},
 		patch,
 	);
 
-	// Register the DELETE tool using modern registerTool API
 	server.registerTool(
 		'bb_delete',
 		{
 			title: 'Bitbucket DELETE Request',
 			description: BB_DELETE_DESCRIPTION,
 			inputSchema: DeleteApiToolArgs,
+			annotations: {
+				readOnlyHint: false,
+				destructiveHint: true,
+				idempotentHint: true,
+				openWorldHint: true,
+			},
 		},
 		del,
 	);
