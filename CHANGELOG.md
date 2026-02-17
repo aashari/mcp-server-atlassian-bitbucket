@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v3.0.0...v3.1.0) (2026-02-17)
+
+
+### Features
+
+* modernize HTTP transport, harden security, and standardize tool contracts ([a44bf76](https://github.com/aashari/mcp-server-atlassian-bitbucket/commit/a44bf76ab664af6087fb4f0b927e9c47c7a0f58c))
+
 # [3.0.0](https://github.com/aashari/mcp-server-atlassian-bitbucket/compare/v2.3.0...v3.0.0) (2026-02-04)
 
 
