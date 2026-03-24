@@ -22,6 +22,7 @@ export interface AtlassianCredentials {
 	bitbucketAppPassword?: string;
 	// Indicates which auth method to use
 	useBitbucketAuth?: boolean;
+	useBearerAuth?: boolean;
 }
 
 /**
@@ -58,12 +59,18 @@ export function getAtlassianCredentials(): AtlassianCredentials | null {
 		'getAtlassianCredentials',
 	);
 
-	// First try standard Atlassian credentials (preferred for consistency)
+	// Try standard Atlassian credentials
 	const siteName = config.get('ATLASSIAN_SITE_NAME');
 	const userEmail = config.get('ATLASSIAN_USER_EMAIL');
 	const apiToken = config.get('ATLASSIAN_API_TOKEN');
 
-	// If standard credentials are available, use them
+	// API token without email → use as bearer token (workspace/repo access tokens)
+	if (apiToken && !userEmail) {
+		methodLogger.debug('Using bearer token credentials');
+		return { apiToken, useBearerAuth: true };
+	}
+
+	// Both email and token → standard basic auth
 	if (userEmail && apiToken) {
 		methodLogger.debug('Using standard Atlassian credentials');
 		return {
@@ -89,7 +96,7 @@ export function getAtlassianCredentials(): AtlassianCredentials | null {
 
 	// If neither set of credentials is available, return null
 	methodLogger.warn(
-		'Missing Atlassian credentials. Please set either ATLASSIAN_SITE_NAME, ATLASSIAN_USER_EMAIL, and ATLASSIAN_API_TOKEN environment variables, or ATLASSIAN_BITBUCKET_USERNAME and ATLASSIAN_BITBUCKET_APP_PASSWORD for Bitbucket-specific auth.',
+		'Missing Atlassian credentials. Please set ATLASSIAN_API_TOKEN alone for bearer token auth (workspace/repository access tokens), ATLASSIAN_USER_EMAIL and ATLASSIAN_API_TOKEN together for standard Atlassian auth, or ATLASSIAN_BITBUCKET_USERNAME and ATLASSIAN_BITBUCKET_APP_PASSWORD for Bitbucket app passwords.',
 	);
 	return null;
 }
@@ -116,7 +123,12 @@ export async function fetchAtlassian<T>(
 	// Set up auth headers based on credential type
 	let authHeader: string;
 
-	if (credentials.useBitbucketAuth) {
+	if (credentials.useBearerAuth) {
+		if (!credentials.apiToken) {
+			throw createAuthInvalidError('Missing bearer token');
+		}
+		authHeader = `Bearer ${credentials.apiToken}`;
+	} else if (credentials.useBitbucketAuth) {
 		// Bitbucket API uses a different auth format
 		if (
 			!credentials.bitbucketUsername ||
