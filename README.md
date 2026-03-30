@@ -85,6 +85,10 @@ npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/your-wo
 npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/your-workspace/your-repo" --jq "{name: name, language: language}"
 ```
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/aashari-mcp-server-atlassian-bitbucket).
+
 ## Connect to AI Assistants
 
 ### For Claude Desktop Users
