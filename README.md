@@ -645,6 +645,30 @@ bb_get, bb_post, bb_put, bb_patch, bb_delete, bb_clone
 3. **TOON format by default** - 30-60% fewer tokens (can override with `outputFormat: "json"`)
 4. **Direct Bitbucket API access** - any API endpoint works, no code changes needed for new features
 
+## Agent Skill
+
+This repository includes an **agent skill** (`skills/bitbucket-mcp-server/SKILL.md`) that teaches AI agents how to use the MCP server effectively — covering all tools, authentication, API paths, body patterns, cost optimization, and example workflows.
+
+### Install
+
+```bash
+npx skills add aashari/mcp-server-atlassian-bitbucket --skill bitbucket-mcp-server
+```
+
+Once installed, your agent will automatically load the skill when working with Bitbucket.
+
+**What the skill covers:**
+- All 6 pass-through tools (`bb_get`, `bb_post`, `bb_put`, `bb_patch`, `bb_delete`, `bb_clone`)
+- Authentication setup for both API tokens and app passwords
+- Common API paths for repos, PRs, branches, commits, pipelines
+- Request body patterns for PRs, inline code comments, approvals, merges
+- Response filtering with JMESPath (`jq` parameter) and cost optimization
+- Example workflows for common Bitbucket operations
+
+### For Skill Developers
+
+The skill also serves as a reference for building similar agent skills for MCP servers.
+
 ## Support
 
 Need help? Here's how to get assistance:

@@ -8,426 +8,204 @@ metadata:
 allowed-tools: Bash
 ---
 
-# Bitbucket MCP Server (`@aashari/mcp-server-atlassian-bitbucket`)
+# Bitbucket MCP Server
 
-## Overview
+Full reference for the `@aashari/mcp-server-atlassian-bitbucket` MCP server — 6 pass-through tools that map directly to the Bitbucket Cloud REST API 2.0.
 
-This skill documents how to use the `@aashari/mcp-server-atlassian-bitbucket` MCP server to interact with **Bitbucket Cloud** via the REST API 2.0. It covers all 6 generic HTTP pass-through tools (`bb_get`, `bb_post`, `bb_put`, `bb_patch`, `bb_delete`, `bb_clone`) that map directly to Bitbucket API endpoints.
-
-**Install this skill:**
-```bash
-npx skills add aashari/mcp-server-atlassian-bitbucket --skill bitbucket-mcp-server
-```
-
-**API base:** `https://api.bitbucket.org` (the MCP server adds the `/2.0` path prefix automatically to all endpoints)
-**API reference:** `https://developer.atlassian.com/cloud/bitbucket/rest/`
+**Install:** `npx skills add aashari/mcp-server-atlassian-bitbucket --skill bitbucket-mcp-server`
+**API:** `https://api.bitbucket.org` (server adds `/2.0` prefix automatically)
+**Reference:** https://developer.atlassian.com/cloud/bitbucket/rest/
 
 ---
 
 ## Authentication
 
-Configure one of these credential pairs via environment variables (see the repo's `.env.example` for details):
+Configure via env vars (see `.env.example`):
 
 **Option A — Atlassian API Token (recommended):**
-Generate at `https://id.atlassian.com/manage-profile/security/api-tokens`
-```
-ATLASSIAN_USER_EMAIL=your.email@company.com
-ATLASSIAN_API_TOKEN=ATATT...
-```
-Required scopes when creating the token: `repository`, `workspace`, `pullrequest`
+- Generate at https://id.atlassian.com/manage-profile/security/api-tokens
+- `ATLASSIAN_USER_EMAIL` + `ATLASSIAN_API_TOKEN` (starts with `ATATT`)
+- Required scopes: `repository`, `workspace`, `pullrequest`
 
 **Option B — Bitbucket App Password (legacy):**
-Generate at `https://bitbucket.org/account/settings/app-passwords/`
-```
-ATLASSIAN_BITBUCKET_USERNAME=your_username
-ATLASSIAN_BITBUCKET_APP_PASSWORD=your_app_password
-```
-Required app password permissions: Workspaces (Read), Repositories (Read/Write), Pull Requests (Read/Write)
+- Generate at https://bitbucket.org/account/settings/app-passwords/
+- `ATLASSIAN_BITBUCKET_USERNAME` + `ATLASSIAN_BITBUCKET_APP_PASSWORD`
+- Required permissions: Workspaces (Read), Repositories (Read/Write), Pull Requests (Read/Write)
 
-> App passwords are being deprecated by Atlassian — prefer Option A for new setups.
+> App passwords are being deprecated — prefer Option A for new setups.
 
 ---
 
-## Tools Reference
+## Tools
 
-### `bb_get` — Read any Bitbucket resource
-
-| Param | Required | Description |
+| Tool | Params | Description |
 |---|---|---|
-| `path` | yes | API endpoint path (e.g. `/workspaces`, `/repositories/{ws}/{repo}/pullrequests`) |
-| `queryParams` | no | Key-value query params (`{"pagelen": "10", "q": "state=\"OPEN\""}`) |
-| `jq` | no | JMESPath filter to extract/reshape fields |
-| `outputFormat` | no | `"toon"` (default, 30-60% fewer tokens) or `"json"` |
+| `bb_get` | `path`, `queryParams?`, `jq?`, `outputFormat?` | Read any Bitbucket resource |
+| `bb_post` | `path`, `body`, `queryParams?`, `jq?`, `outputFormat?` | Create a resource |
+| `bb_put` | `path`, `body`, `queryParams?`, `jq?`, `outputFormat?` | Full replace |
+| `bb_patch` | `path`, `body`, `queryParams?`, `jq?`, `outputFormat?` | Partial update |
+| `bb_delete` | `path`, `queryParams?`, `jq?`, `outputFormat?` | Delete (usually 204) |
+| `bb_clone` | `repoSlug`, `targetPath` | Clone repo via SSH/HTTPS |
 
-### `bb_post` — Create resources
-
-Same as `bb_get` plus:
-
-| Param | Required | Description |
-|---|---|---|
-| `body` | yes | JSON request body |
-
-### `bb_put` — Full replace of a resource
-
-Same as `bb_post`.
-
-### `bb_patch` — Partial update of a resource
-
-Same as `bb_post`.
-
-### `bb_delete` — Delete a resource
-
-Same as `bb_get` (no body). Most return 204 No Content.
-
-### `bb_clone` — Clone a repository locally
-
-| Param | Required | Description |
-|---|---|---|
-| `repoSlug` | yes | Repository slug |
-| `targetPath` | yes | Absolute path to clone into |
-
-Clones into `targetPath/repoSlug`. Uses SSH (preferred), falls back to HTTPS.
+**Common params:**
+- `path` — API endpoint (e.g. `/workspaces`, `/repositories/{ws}/{repo}/pullrequests`)
+- `queryParams` — `{"pagelen": "10", "q": "state=\"OPEN\""}`
+- `jq` — JMESPath expression to filter response (not the `jq` CLI tool)
+- `outputFormat` — `"toon"` (default, 30-60% fewer tokens) or `"json"`
+- `body` (POST/PUT/PATCH) — JSON request body
 
 ---
 
 ## Common API Paths
 
-### Workspaces & Repositories
-
 | Path | Methods | Purpose |
 |---|---|---|
 | `/workspaces` | GET | List workspaces |
-| `/repositories/{workspace}` | GET | List repos in workspace |
-| `/repositories/{workspace}/{repo}` | GET / PUT | Get / update repo details |
-| `/repositories/{workspace}/{repo}/refs/branches` | GET | List branches |
-| `/repositories/{workspace}/{repo}/refs/branches/{name}` | GET / DELETE | Get / delete a branch |
-| `/repositories/{workspace}/{repo}/commits` | GET | List commits |
-| `/repositories/{workspace}/{repo}/commits/{commit}` | GET | Get a commit |
-| `/repositories/{workspace}/{repo}/src/{commit}/{filepath}` | GET | Get file content at commit |
-| `/repositories/{workspace}/{repo}/diff/{source}..{destination}` | GET | Compare branches/commits |
-
-### Pull Requests
-
-| Path | Methods | Purpose |
-|---|---|---|
-| `/repositories/{ws}/{repo}/pullrequests` | GET / POST | List / create PRs |
-| `/repositories/{ws}/{repo}/pullrequests/{id}` | GET / PATCH / DELETE | Get / update / delete PR |
-| `/repositories/{ws}/{repo}/pullrequests/{id}/diff` | GET | Get PR diff |
-| `/repositories/{ws}/{repo}/pullrequests/{id}/comments` | GET / POST | List / add PR comments |
-| `/repositories/{ws}/{repo}/pullrequests/{id}/comments/{cid}` | PATCH / DELETE | Edit / delete a comment |
-| `/repositories/{ws}/{repo}/pullrequests/{id}/approve` | POST / DELETE | Approve / remove approval |
+| `/repositories/{workspace}` | GET | List repos |
+| `/repositories/{ws}/{repo}` | GET/PUT | Get/update repo |
+| `/repositories/{ws}/{repo}/refs/branches` | GET | List branches |
+| `/repositories/{ws}/{repo}/refs/branches/{name}` | GET/DELETE | Get/delete branch |
+| `/repositories/{ws}/{repo}/commits` | GET | List commits |
+| `/repositories/{ws}/{repo}/src/{commit}/{path}` | GET | File at commit |
+| `/repositories/{ws}/{repo}/diff/{src}..{dst}` | GET | Compare branches |
+| `/repositories/{ws}/{repo}/pullrequests` | GET/POST | List/create PRs |
+| `/repositories/{ws}/{repo}/pullrequests/{id}` | GET/PATCH/DELETE | Get/update/delete PR |
+| `/repositories/{ws}/{repo}/pullrequests/{id}/diff` | GET | PR diff |
+| `/repositories/{ws}/{repo}/pullrequests/{id}/comments` | GET/POST | List/add comments |
+| `/repositories/{ws}/{repo}/pullrequests/{id}/comments/{cid}` | PATCH/DELETE | Edit/delete comment |
+| `/repositories/{ws}/{repo}/pullrequests/{id}/approve` | POST/DELETE | Approve/remove |
 | `/repositories/{ws}/{repo}/pullrequests/{id}/request-changes` | POST | Request changes |
 | `/repositories/{ws}/{repo}/pullrequests/{id}/merge` | POST | Merge PR |
 | `/repositories/{ws}/{repo}/pullrequests/{id}/decline` | POST | Decline PR |
-| `/repositories/{ws}/{repo}/pullrequests/{id}/activity` | GET | Activity log (includes inline comment metadata) |
-
-### Other
-
-| Path | Methods | Purpose |
-|---|---|---|
-| `/repositories/{ws}/{repo}/issues` | GET / POST | List / create issues |
-| `/repositories/{ws}/{repo}/pipelines` | GET / POST | List / trigger pipelines |
+| `/repositories/{ws}/{repo}/pullrequests/{id}/activity` | GET | Activity log |
+| `/repositories/{ws}/{repo}/issues` | GET/POST | List/create issues |
+| `/repositories/{ws}/{repo}/pipelines` | GET/POST | List/trigger pipelines |
 | `/repositories/{ws}/{repo}/deployments` | GET | List deployments |
 
 ---
 
 ## Request Body Reference
 
-### Create a PR
+**Create PR:**
 ```json
-{
-  "title": "My feature",
-  "source": {"branch": {"name": "feature-branch"}},
-  "destination": {"branch": {"name": "main"}},
-  "description": "Optional description",
-  "reviewers": [{"uuid": "{user-uuid}"}],
-  "close_source_branch": true,
-  "draft": false
-}
+{"title": "My feature", "source": {"branch": {"name": "feature"}}, "destination": {"branch": {"name": "main"}}, "description": "...", "reviewers": [{"uuid": "..."}], "close_source_branch": true, "draft": false}
 ```
 
-### Add a general PR comment
+**General PR comment:**
 ```json
-{"content": {"raw": "Looks good to me!"}}
+{"content": {"raw": "Looks good!"}}
 ```
 
-### Add an inline (code-level) PR comment
-
-Anchored to a specific file and line in the PR diff:
-
+**Inline PR comment** (anchored to a file/line in the diff):
 ```json
-{
-  "content": {"raw": "This variable name is unclear."},
-  "inline": {
-    "path": "src/auth/login.ts",
-    "to": 37
-  }
-}
+{"content": {"raw": "Fix this."}, "inline": {"path": "src/auth/login.ts", "to": 37}}
 ```
+- `to` — line in new file (added/changed code)
+- `from` — line in old file (deleted code)
+- **Never use `from` + `to` together** — Bitbucket ignores `to` when `from` is present
+- Get the diff first: `bb_get → /repositories/{ws}/{repo}/pullrequests/{id}/diff`
 
-**`inline` field rules:**
-
-| Field | When to Use |
-|---|---|
-| `path` | File path relative to repo root (must match diff exactly) |
-| `to` | Line number in the **new** (destination) file — for added/changed code |
-| `from` | Line number in the **old** (source) file — for deleted/removed code |
-
-> **CRITICAL: Never use `from` and `to` together.** The Bitbucket API silently ignores `to` when `from` is present. Pick one:
-> - Added/changed line → `to`
-> - Removed line → `from`
-
-To find the correct file paths and line numbers, first fetch the PR diff:
-```
-bb_get → /repositories/{workspace}/{repo}/pullrequests/{id}/diff
-```
-
-### Approve a PR
+**Approve / Request changes / Decline:**
 ```json
 {}
 ```
 
-### Request changes on a PR
-```json
-{}
-```
-
-### Merge a PR
+**Merge:**
 ```json
 {"merge_strategy": "squash"}
 ```
+Strategies: `merge_commit`, `squash`, `fast_forward`
 
-Merge strategies: `merge_commit`, `squash`, `fast_forward`
-
-### Decline a PR
+**Update PR:**
 ```json
-{}
+{"title": "New title", "description": "Updated"}
 ```
 
-### Update PR title / description
+**Update reviewers:**
 ```json
-{"title": "New title", "description": "Updated description"}
+{"reviewers": [{"uuid": "..."}]}
 ```
 
-### Update PR reviewers
+**Edit comment:**
 ```json
-{"reviewers": [{"uuid": "{user-uuid}"}]}
-```
-
-### Edit a PR comment
-```json
-{"content": {"raw": "Updated text"}}
+{"content": {"raw": "Updated"}}
 ```
 
 ---
 
-## Output Format
+## Response Filtering (`jq`)
 
-Default is **TOON** (Token-Oriented Object Notation) — 30–60% fewer tokens than JSON.
-
-```
-TOON example:
-values:
-  name  | slug
-  repo1 | repo-1
-  repo2 | repo-2
-```
-
-Pass `outputFormat: "json"` to get standard JSON.
-
----
-
-## Response Filtering (`jq` parameter)
-
-The `bb_*` tools accept a `jq` parameter for filtering API responses. Despite the name, the expression language is **JMESPath** (not the `jq` CLI tool). Always use this to extract only the fields you need.
+The `jq` param uses **JMESPath** expressions (not the `jq` CLI). Always use it to reduce token costs.
 
 | Pattern | Effect |
 |---|---|
-| `values[*].slug` | Extract one field from all items |
-| `values[*].{id: id, title: title}` | Custom object with selected fields |
-| `values[0]` | First item only |
-| `values[:5]` | First 5 items |
-| `values[?state=='OPEN']` | Filter by condition |
-| `{id: id, content: content.raw}` | Single object reshape |
+| `values[*].slug` | Extract one field |
+| `values[*].{id:id, title:title}` | Custom object |
+| `values[0]` | First item |
+| `values[?state=='OPEN']` | Filter |
+| `{id:id, content:content.raw}` | Single reshape |
 
----
-
-## Query Parameters (`queryParams`)
+## Query Params
 
 | Param | Description |
 |---|---|
-| `pagelen` | Page size (e.g. `"10"`) |
+| `pagelen` | Page size |
 | `page` | Page number |
-| `q` | Server-side filter (`state="OPEN"`, `title~"bug"`) |
-| `sort` | Sort field (`-updated_on` for descending) |
+| `q` | Server-side filter (`state="OPEN"`) |
+| `sort` | Sort field (`-updated_on`) |
 | `fields` | Sparse fieldset (`values.id,values.title`) |
-
----
-
-## Schema Discovery Pattern
-
-When unsure what fields are available:
-
-1. Fetch **one item** with no `jq`: `queryParams: {"pagelen": "1"}`
-2. Inspect the response fields
-3. Re-fetch with `jq` targeting the fields you need
-
----
 
 ## Cost Optimization
 
 1. **Always use `jq`** — unfiltered responses burn tokens
-2. **Set `pagelen`** — default page sizes can be large
-3. **Use server-side `q` filtering** — reduces payload before it reaches the tool
-4. **Use `fields` sparse fieldsets** — reduces payload at the API level
-5. **TOON is default** — don't switch to JSON unless you need the full schema
+2. **Set `pagelen`** — don't fetch more than needed
+3. **Use `q` filtering** — reduce payload server-side
+4. **Use `fields`** — sparse fields at the API level
+5. **TOON is default** — don't switch to JSON unless necessary
+
+## Schema Discovery
+
+Fetch one item with no `jq` to see available fields, then re-fetch with `jq` targeting only what you need.
 
 ---
 
 ## Example Workflows
 
-### List open PRs
-```json
-{
-  "tool": "bb_get",
-  "path": "/repositories/myworkspace/myrepo/pullrequests",
-  "queryParams": {"pagelen": "10"},
-  "jq": "values[*].{id: id, title: title, state: state, author: author.display_name}"
-}
+### PR operations
+```
+bb_get    → /repositories/myws/myrepo/pullrequests              ?pagelen=10 & jq=values[*].{id,title,state}
+bb_get    → /repositories/myws/myrepo/pullrequests/42/diff
+bb_post   → /repositories/myws/myrepo/pullrequests              body={"title":"My PR","source":{"branch":{"name":"feature"}},"destination":{"branch":{"name":"main"}}}
+bb_post   → /repositories/myws/myrepo/pullrequests/42/approve   body={}
+bb_post   → /repositories/myws/myrepo/pullrequests/42/merge     body={"merge_strategy":"squash"}
 ```
 
-### Get PR diff (to find file paths and line numbers for inline comments)
-```json
-{
-  "tool": "bb_get",
-  "path": "/repositories/myworkspace/myrepo/pullrequests/42/diff"
-}
+### PR comments
+```
+bb_post   → /repositories/myws/myrepo/pullrequests/42/comments   body={"content":{"raw":"Looks good!"}}
+bb_post   → /repositories/myws/myrepo/pullrequests/42/comments   body={"content":{"raw":"Fix this."},"inline":{"path":"src/auth/login.ts","to":37}}
 ```
 
-### Create a PR
-```json
-{
-  "tool": "bb_post",
-  "path": "/repositories/myworkspace/myrepo/pullrequests",
-  "body": {
-    "title": "Add login feature",
-    "source": {"branch": {"name": "feature-login"}},
-    "destination": {"branch": {"name": "main"}}
-  },
-  "jq": "{id: id, title: title}"
-}
+### Branches & repos
 ```
-
-### Add an inline comment on a PR
-```json
-{
-  "tool": "bb_post",
-  "path": "/repositories/myworkspace/myrepo/pullrequests/42/comments",
-  "body": {
-    "content": {"raw": "This should use a constant instead of magic number."},
-    "inline": {"path": "src/auth/login.ts", "to": 37}
-  },
-  "jq": "{id: id, content: content.raw}"
-}
-```
-
-### Add a general PR comment
-```json
-{
-  "tool": "bb_post",
-  "path": "/repositories/myworkspace/myrepo/pullrequests/42/comments",
-  "body": {
-    "content": {"raw": "Overall this PR looks good, just one inline comment above."}
-  },
-  "jq": "{id: id}"
-}
-```
-
-### Approve a PR
-```json
-{
-  "tool": "bb_post",
-  "path": "/repositories/myworkspace/myrepo/pullrequests/42/approve",
-  "body": {}
-}
-```
-
-### Merge a PR
-```json
-{
-  "tool": "bb_post",
-  "path": "/repositories/myworkspace/myrepo/pullrequests/42/merge",
-  "body": {"merge_strategy": "squash"},
-  "jq": "{state: state, merge_commit: merge_commit.hash}"
-}
-```
-
-### List branches
-```json
-{
-  "tool": "bb_get",
-  "path": "/repositories/myworkspace/myrepo/refs/branches",
-  "jq": "values[*].{name: name, target: target.hash}"
-}
-```
-
-### Delete a branch
-```json
-{
-  "tool": "bb_delete",
-  "path": "/repositories/myworkspace/myrepo/refs/branches/old-feature-branch"
-}
-```
-
-### Clone a repo locally
-```json
-{
-  "tool": "bb_clone",
-  "repoSlug": "myrepo",
-  "targetPath": "/home/user/projects"
-}
-```
-
-### Get repository details
-```json
-{
-  "tool": "bb_get",
-  "path": "/repositories/myworkspace/myrepo",
-  "jq": "{name: name, slug: slug, is_private: is_private, mainbranch: mainbranch.name}"
-}
-```
-
-### List commits on a branch
-```json
-{
-  "tool": "bb_get",
-  "path": "/repositories/myworkspace/myrepo/commits",
-  "queryParams": {"include": "feature-branch", "pagelen": "5"},
-  "jq": "values[*].{hash: hash, message: message, date: date}"
-}
+bb_get    → /repositories/myws/myrepo/refs/branches              jq=values[*].{name,target:target.hash}
+bb_delete → /repositories/myws/myrepo/refs/branches/old-feature
+bb_get    → /repositories/myws/myrepo                           jq={name,slug,mainbranch:mainbranch.name}
+bb_get    → /repositories/myws/myrepo/commits                   ?include=feature&pagelen=5 & jq=values[*].{hash,message,date}
+bb_clone  → repoSlug=myrepo, targetPath=/home/user/projects
 ```
 
 ---
 
 ## CLI Usage (npx)
 
-All tools available via CLI without an MCP client:
-
 ```bash
 # GET
-npx -y @aashari/mcp-server-atlassian-bitbucket get \
-  --path "/repositories/myworkspace/myrepo/pullrequests" \
-  --jq "values[*].{id: id, title: title}"
+npx -y @aashari/mcp-server-atlassian-bitbucket get --path "/repositories/myws/myrepo/pullrequests" --jq "values[*].{id:id,title:title}"
 
-# POST (create PR)
-npx -y @aashari/mcp-server-atlassian-bitbucket post \
-  --path "/repositories/myworkspace/myrepo/pullrequests" \
-  --body '{"title": "My PR", "source": {"branch": {"name": "feature"}}, "destination": {"branch": {"name": "main"}}}'
+# POST
+npx -y @aashari/mcp-server-atlassian-bitbucket post --path "/repositories/myws/myrepo/pullrequests" --body '{"title":"My PR","source":{"branch":{"name":"feature"}}}'
 
 # POST with query params
-npx -y @aashari/mcp-server-atlassian-bitbucket post \
-  --path "/repositories/myworkspace/myrepo/pullrequests/42/comments" \
-  --body '{"content": {"raw": "Looks good!"}}' \
-  --query-params '{"fields": "id,content"}' \
-  --jq "{id: id, content: content.raw}"
+npx -y @aashari/mcp-server-atlassian-bitbucket post --path "/repositories/myws/myrepo/pullrequests/42/comments" --body '{"content":{"raw":"Looks good!"}}' --query-params '{"fields":"id,content"}' --jq "{id:id,content:content.raw}"
 ```
