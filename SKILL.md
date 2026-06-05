@@ -12,7 +12,7 @@ allowed-tools: Bash
 
 Full reference for the `@aashari/mcp-server-atlassian-bitbucket` MCP server — 6 pass-through tools that map directly to the Bitbucket Cloud REST API 2.0.
 
-**Install:** `npx skills add aashari/mcp-server-atlassian-bitbucket --skill bitbucket-mcp-server`
+**Install:** `npx skills add aashari/mcp-server-atlassian-bitbucket`
 **API:** `https://api.bitbucket.org` (server adds `/2.0` prefix automatically)
 **Reference:** https://developer.atlassian.com/cloud/bitbucket/rest/
 

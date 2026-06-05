@@ -647,12 +647,12 @@ bb_get, bb_post, bb_put, bb_patch, bb_delete, bb_clone
 
 ## Agent Skill
 
-This repository includes an **agent skill** (`skills/bitbucket-mcp-server/SKILL.md`) that teaches AI agents how to use the MCP server effectively — covering all tools, authentication, API paths, body patterns, cost optimization, and example workflows.
+This repository includes an **agent skill** (`SKILL.md`) that teaches AI agents how to use the MCP server effectively — covering all tools, authentication, API paths, body patterns, cost optimization, and example workflows.
 
 ### Install
 
 ```bash
-npx skills add aashari/mcp-server-atlassian-bitbucket --skill bitbucket-mcp-server
+npx skills add aashari/mcp-server-atlassian-bitbucket
 ```
 
 Once installed, your agent will automatically load the skill when working with Bitbucket.
