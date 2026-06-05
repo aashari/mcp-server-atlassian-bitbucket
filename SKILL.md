@@ -1,6 +1,6 @@
 ---
 name: bitbucket-mcp-server
-description: 'Agent skill for @aashari/mcp-server-atlassian-bitbucket — the MCP server that connects AI assistants to Bitbucket Cloud REST API 2.0. Covers all 6 pass-through tools (bb_get, bb_post, bb_put, bb_patch, bb_delete, bb_clone), authentication, common API paths for repos/PRs/branches/commits, request body patterns, TOON output, JMESPath jq filtering, query params, cost optimization, and example workflows including inline PR comments. Use when asked to interact with Bitbucket Cloud via MCP — list PRs, create/merge/approve/decline PRs, add inline code-level comments, list branches, create repos, clone repos, or perform any Bitbucket API operation.'
+description: 'Agent skill for @aashari/mcp-server-atlassian-bitbucket — the MCP server that connects AI assistants to Bitbucket Cloud REST API 2.0. Covers all 6 pass-through tools (bb_get, bb_post, bb_put, bb_patch, bb_delete, bb_clone), authentication, common API paths for repos/PRs/branches/commits, request body patterns, TOON output, JMESPath filtering via the jq parameter, query params, cost optimization, and example workflows including inline PR comments. Use when asked to interact with Bitbucket Cloud via MCP — list PRs, create/merge/approve/decline PRs, add inline code-level comments, list branches, create repos, clone repos, or perform any Bitbucket API operation.'
 license: MIT
 metadata:
   author: aashari
@@ -172,7 +172,7 @@ Fetch one item with no `jq` to see available fields, then re-fetch with `jq` tar
 ## Example Workflows
 
 ### PR operations
-```
+```text
 bb_get    → /repositories/myws/myrepo/pullrequests              ?pagelen=10 & jq=values[*].{id,title,state}
 bb_get    → /repositories/myws/myrepo/pullrequests/42/diff
 bb_post   → /repositories/myws/myrepo/pullrequests              body={"title":"My PR","source":{"branch":{"name":"feature"}},"destination":{"branch":{"name":"main"}}}
@@ -181,13 +181,13 @@ bb_post   → /repositories/myws/myrepo/pullrequests/42/merge     body={"merge_s
 ```
 
 ### PR comments
-```
+```text
 bb_post   → /repositories/myws/myrepo/pullrequests/42/comments   body={"content":{"raw":"Looks good!"}}
 bb_post   → /repositories/myws/myrepo/pullrequests/42/comments   body={"content":{"raw":"Fix this."},"inline":{"path":"src/auth/login.ts","to":37}}
 ```
 
 ### Branches & repos
-```
+```text
 bb_get    → /repositories/myws/myrepo/refs/branches              jq=values[*].{name,target:target.hash}
 bb_delete → /repositories/myws/myrepo/refs/branches/old-feature
 bb_get    → /repositories/myws/myrepo                           jq={name,slug,mainbranch:mainbranch.name}
