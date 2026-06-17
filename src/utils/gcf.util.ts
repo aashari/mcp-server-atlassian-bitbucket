@@ -34,7 +34,7 @@ async function loadGcfEncoder(): Promise<GcfEncodeGeneric | null> {
 /**
  * Convert data to GCF format with JSON fallback
  *
- * Attempts to encode data as GCF (Generic Columnar Format) for
+ * Attempts to encode data as GCF (Graph Compact Format) for
  * more efficient LLM token usage. Falls back to JSON if GCF encoding fails.
  *
  * @param data - The data to convert

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /**
  * Output format options for API responses
- * - gcf: Generic Columnar Format (default, more token-efficient for LLMs)
+ * - gcf: Graph Compact Format (default, more token-efficient for LLMs)
  * - json: Standard JSON format
  */
 export const OutputFormat = z

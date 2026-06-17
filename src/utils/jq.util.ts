@@ -65,7 +65,7 @@ export function toJsonString(data: unknown, pretty: boolean = true): string {
 /**
  * Convert data to output string for MCP response
  *
- * By default, converts to GCF (Generic Columnar Format) for
+ * By default, converts to GCF (Graph Compact Format) for
  * improved LLM token efficiency (53-71% fewer tokens).
  * Falls back to JSON if GCF conversion fails or if useGcf is false.
  *
