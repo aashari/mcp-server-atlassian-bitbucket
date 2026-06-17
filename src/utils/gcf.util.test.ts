@@ -1,26 +1,26 @@
 import { describe, expect, test } from '@jest/globals';
-import { toToonOrJson, toToonOrJsonSync } from './toon.util.js';
+import { toGcfOrJson, toGcfOrJsonSync } from './gcf.util.js';
 
 /**
- * NOTE: The TOON encoder (@toon-format/toon) is an ESM-only package.
+ * NOTE: The GCF encoder (@blackwell-systems/gcf) is an ESM-only package.
  * In Jest's CommonJS test environment, dynamic imports may not work,
- * causing TOON conversion to fall back to JSON. These tests verify:
+ * causing GCF conversion to fall back to JSON. These tests verify:
  * 1. The fallback mechanism works correctly
- * 2. Functions return valid output (either TOON or JSON fallback)
+ * 2. Functions return valid output (either GCF or JSON fallback)
  * 3. Error handling is robust
  *
- * TOON conversion is verified at runtime via CLI/integration tests.
+ * GCF conversion is verified at runtime via CLI/integration tests.
  */
 
-describe('TOON Utilities', () => {
-	describe('toToonOrJson', () => {
+describe('GCF Utilities', () => {
+	describe('toGcfOrJson', () => {
 		test('returns valid output for simple object', async () => {
 			const data = { name: 'Alice', age: 30 };
 			const jsonFallback = JSON.stringify(data, null, 2);
 
-			const result = await toToonOrJson(data, jsonFallback);
+			const result = await toGcfOrJson(data, jsonFallback);
 
-			// Should return either TOON or JSON fallback
+			// Should return either GCF or JSON fallback
 			expect(result).toBeDefined();
 			expect(result.length).toBeGreaterThan(0);
 			// Should contain the data values regardless of format
@@ -37,7 +37,7 @@ describe('TOON Utilities', () => {
 			};
 			const jsonFallback = JSON.stringify(data, null, 2);
 
-			const result = await toToonOrJson(data, jsonFallback);
+			const result = await toGcfOrJson(data, jsonFallback);
 
 			expect(result).toBeDefined();
 			expect(result).toContain('Alice');
@@ -54,7 +54,7 @@ describe('TOON Utilities', () => {
 			};
 			const jsonFallback = JSON.stringify(data, null, 2);
 
-			const result = await toToonOrJson(data, jsonFallback);
+			const result = await toGcfOrJson(data, jsonFallback);
 
 			expect(result).toBeDefined();
 			expect(result).toContain('Test task');
@@ -68,10 +68,10 @@ describe('TOON Utilities', () => {
 			const nullData = null;
 
 			// All primitives should produce valid output
-			const strResult = await toToonOrJson(stringData, '"hello"');
-			const numResult = await toToonOrJson(numberData, '42');
-			const boolResult = await toToonOrJson(boolData, 'true');
-			const nullResult = await toToonOrJson(nullData, 'null');
+			const strResult = await toGcfOrJson(stringData, '"hello"');
+			const numResult = await toGcfOrJson(numberData, '42');
+			const boolResult = await toGcfOrJson(boolData, 'true');
+			const nullResult = await toGcfOrJson(nullData, 'null');
 
 			expect(strResult).toContain('hello');
 			expect(numResult).toContain('42');
@@ -83,8 +83,8 @@ describe('TOON Utilities', () => {
 			const emptyObj = {};
 			const emptyArr: unknown[] = [];
 
-			const objResult = await toToonOrJson(emptyObj, '{}');
-			const arrResult = await toToonOrJson(emptyArr, '[]');
+			const objResult = await toGcfOrJson(emptyObj, '{}');
+			const arrResult = await toGcfOrJson(emptyArr, '[]');
 
 			expect(objResult).toBeDefined();
 			expect(arrResult).toBeDefined();
@@ -94,20 +94,20 @@ describe('TOON Utilities', () => {
 			const data = { message: 'Hello\nWorld', path: '/some/path' };
 			const jsonFallback = JSON.stringify(data, null, 2);
 
-			const result = await toToonOrJson(data, jsonFallback);
+			const result = await toGcfOrJson(data, jsonFallback);
 
 			expect(result).toBeDefined();
 			expect(result.length).toBeGreaterThan(0);
 		});
 	});
 
-	describe('toToonOrJsonSync', () => {
+	describe('toGcfOrJsonSync', () => {
 		test('returns JSON fallback when encoder not loaded', () => {
 			const data = { name: 'Test', value: 123 };
 			const jsonFallback = JSON.stringify(data, null, 2);
 
 			// Without preloading, sync version should return fallback
-			const result = toToonOrJsonSync(data, jsonFallback);
+			const result = toGcfOrJsonSync(data, jsonFallback);
 
 			expect(result).toBeDefined();
 			expect(result).toContain('Test');
@@ -123,7 +123,7 @@ describe('TOON Utilities', () => {
 			};
 			const jsonFallback = JSON.stringify(data, null, 2);
 
-			const result = toToonOrJsonSync(data, jsonFallback);
+			const result = toGcfOrJsonSync(data, jsonFallback);
 
 			expect(result).toBeDefined();
 			expect(result).toContain('Page One');
@@ -141,10 +141,10 @@ describe('TOON Utilities', () => {
 			};
 			const jsonFallback = JSON.stringify(data, null, 2);
 
-			const result = await toToonOrJson(data, jsonFallback);
+			const result = await toGcfOrJson(data, jsonFallback);
 
 			// If it's JSON fallback, it should be parseable
-			// If it's TOON, this will fail, but the test still passes
+			// If it's GCF, this will fail, but the test still passes
 			// because we're just checking the result is valid
 			expect(result).toBeDefined();
 			expect(result.length).toBeGreaterThan(0);
@@ -163,7 +163,7 @@ describe('TOON Utilities', () => {
 
 			for (const { data, fallback } of testCases) {
 				// Should not throw
-				const result = await toToonOrJson(data, fallback);
+				const result = await toGcfOrJson(data, fallback);
 				expect(result).toBeDefined();
 			}
 		});

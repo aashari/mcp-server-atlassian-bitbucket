@@ -87,8 +87,8 @@
     "access": "public"
   },
   "dependencies": {
+    "@blackwell-systems/gcf": "^2.1.1",
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@toon-format/toon": "^2.1.0",
     "commander": "^14.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

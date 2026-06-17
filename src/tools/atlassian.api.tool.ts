@@ -124,7 +124,7 @@ const patch = createWriteHandler('PATCH', handlePatch);
 const del = createReadHandler('DELETE', handleDelete);
 
 // Tool descriptions
-const BB_GET_DESCRIPTION = `Read any Bitbucket data. Returns TOON format by default (30-60% fewer tokens than JSON).
+const BB_GET_DESCRIPTION = `Read any Bitbucket data. Returns GCF format by default (53-71% fewer tokens than JSON).
 
 **IMPORTANT - Cost Optimization:**
 - ALWAYS use \`jq\` param to filter response fields. Unfiltered responses are very expensive!
@@ -135,7 +135,7 @@ const BB_GET_DESCRIPTION = `Read any Bitbucket data. Returns TOON format by defa
 1. First call: \`path: "/workspaces", queryParams: {"pagelen": "1"}\` (no jq) - explore available fields
 2. Then use: \`jq: "values[*].{slug: slug, name: name, uuid: uuid}"\` - extract only what you need
 
-**Output format:** TOON (default, token-efficient) or JSON (\`outputFormat: "json"\`)
+**Output format:** GCF (default, token-efficient) or JSON (\`outputFormat: "json"\`)
 
 **Common paths:**
 - \`/workspaces\` - list workspaces
@@ -158,13 +158,13 @@ const BB_GET_DESCRIPTION = `Read any Bitbucket data. Returns TOON format by defa
 
 The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-const BB_POST_DESCRIPTION = `Create Bitbucket resources. Returns TOON format by default (token-efficient).
+const BB_POST_DESCRIPTION = `Create Bitbucket resources. Returns GCF format by default (token-efficient).
 
 **IMPORTANT - Cost Optimization:**
 - Use \`jq\` param to extract only needed fields from response (e.g., \`jq: "{id: id, title: title}"\`)
 - Unfiltered responses include all metadata and are expensive!
 
-**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
+**Output format:** GCF (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 
@@ -185,13 +185,13 @@ const BB_POST_DESCRIPTION = `Create Bitbucket resources. Returns TOON format by 
 
 The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-const BB_PUT_DESCRIPTION = `Replace Bitbucket resources (full update). Returns TOON format by default.
+const BB_PUT_DESCRIPTION = `Replace Bitbucket resources (full update). Returns GCF format by default.
 
 **IMPORTANT - Cost Optimization:**
 - Use \`jq\` param to extract only needed fields from response
 - Example: \`jq: "{uuid: uuid, name: name}"\`
 
-**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
+**Output format:** GCF (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 
@@ -206,11 +206,11 @@ const BB_PUT_DESCRIPTION = `Replace Bitbucket resources (full update). Returns T
 
 The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-const BB_PATCH_DESCRIPTION = `Partially update Bitbucket resources. Returns TOON format by default.
+const BB_PATCH_DESCRIPTION = `Partially update Bitbucket resources. Returns GCF format by default.
 
 **IMPORTANT - Cost Optimization:** Use \`jq\` param to filter response fields.
 
-**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
+**Output format:** GCF (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 
@@ -228,9 +228,9 @@ const BB_PATCH_DESCRIPTION = `Partially update Bitbucket resources. Returns TOON
 
 The \`/2.0\` prefix is added automatically. API reference: https://developer.atlassian.com/cloud/bitbucket/rest/`;
 
-const BB_DELETE_DESCRIPTION = `Delete Bitbucket resources. Returns TOON format by default.
+const BB_DELETE_DESCRIPTION = `Delete Bitbucket resources. Returns GCF format by default.
 
-**Output format:** TOON (default) or JSON (\`outputFormat: "json"\`)
+**Output format:** GCF (default) or JSON (\`outputFormat: "json"\`)
 
 **Common operations:**
 

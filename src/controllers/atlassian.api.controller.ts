@@ -23,7 +23,7 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 /**
  * Output format type
  */
-type OutputFormat = 'toon' | 'json';
+type OutputFormat = 'gcf' | 'json';
 
 /**
  * Base options for all API requests
@@ -128,9 +128,9 @@ async function handleRequest(
 		// Apply JQ filter if provided, otherwise return raw data
 		const result = applyJqFilter(response.data, options.jq);
 
-		// Convert to output format (TOON by default, JSON if requested)
-		const useToon = options.outputFormat !== 'json';
-		const content = await toOutputString(result, useToon);
+		// Convert to output format (GCF by default, JSON if requested)
+		const useGcf = options.outputFormat !== 'json';
+		const content = await toOutputString(result, useGcf);
 
 		return {
 			content,
