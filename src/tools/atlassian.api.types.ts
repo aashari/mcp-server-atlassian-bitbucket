@@ -2,14 +2,14 @@ import { z } from 'zod';
 
 /**
  * Output format options for API responses
- * - toon: Token-Oriented Object Notation (default, more token-efficient for LLMs)
+ * - gcf: Graph Compact Format (default, more token-efficient for LLMs)
  * - json: Standard JSON format
  */
 export const OutputFormat = z
-	.enum(['toon', 'json'])
+	.enum(['gcf', 'json'])
 	.optional()
 	.describe(
-		'Output format: "toon" (default, 30-60% fewer tokens) or "json". TOON is optimized for LLMs with tabular arrays and minimal syntax.',
+		'Output format: "gcf" (default, 53-71% fewer tokens) or "json". GCF is optimized for LLMs with tabular arrays and minimal syntax.',
 	);
 
 /**
@@ -58,7 +58,7 @@ const BaseApiToolArgs = {
 
 	/**
 	 * Output format for the response
-	 * Defaults to TOON (token-efficient), can be set to JSON if needed
+	 * Defaults to GCF (token-efficient), can be set to JSON if needed
 	 */
 	outputFormat: OutputFormat,
 };

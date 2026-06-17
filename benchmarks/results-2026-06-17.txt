@@ -1,0 +1,70 @@
+==================================================================================
+GCF vs TOON vs JSON Token Benchmark
+Realistic Bitbucket API Payloads
+Date: 2026-06-17
+Token estimation: len/4 heuristic
+==================================================================================
+
+## Pull Requests
+
+Dataset               Rows     JSON     TOON      GCF   TOON%    GCF%  GCF vs TOON
+----------------------------------------------------------------------------------
+Pull Requests           10    1,880    1,438    1,079   76.5%   57.4%        75.0%
+Pull Requests           50   10,302    7,672    5,691   74.5%   55.2%        74.2%
+Pull Requests          100   19,955   15,005   11,029   75.2%   55.3%        73.5%
+Pull Requests          200   41,204   30,708   22,699   74.5%   55.1%        73.9%
+
+## Repositories
+
+Dataset               Rows     JSON     TOON      GCF   TOON%    GCF%  GCF vs TOON
+----------------------------------------------------------------------------------
+Repositories            10    1,600    1,396      841   87.3%   52.6%        60.2%
+Repositories            50    7,915    6,891    3,956   87.1%   50.0%        57.4%
+Repositories           100   15,800   13,751    7,841   87.0%   49.6%        57.0%
+Repositories           200   31,657   27,558   15,723   87.1%   49.7%        57.1%
+
+## Commits
+
+Dataset               Rows     JSON     TOON      GCF   TOON%    GCF%  GCF vs TOON
+----------------------------------------------------------------------------------
+Commits                 10    1,267    1,018      895   80.3%   70.6%        87.9%
+Commits                 50    6,319    5,059    4,391   80.1%   69.5%        86.8%
+Commits                100   12,944   10,321    8,964   79.7%   69.3%        86.9%
+Commits                200   26,080   20,776   18,073   79.7%   69.3%        87.0%
+
+## Branches
+
+Dataset               Rows     JSON     TOON      GCF   TOON%    GCF%  GCF vs TOON
+----------------------------------------------------------------------------------
+Branches                10    1,160      927      802   79.9%   69.1%        86.5%
+Branches                50    5,674    4,559    3,867   80.3%   68.2%        84.8%
+Branches               100   11,340    9,121    7,714   80.4%   68.0%        84.6%
+Branches               200   22,686   18,247   15,441   80.4%   68.1%        84.6%
+
+## Issues
+
+Dataset               Rows     JSON     TOON      GCF   TOON%    GCF%  GCF vs TOON
+----------------------------------------------------------------------------------
+Issues                  10    1,810    1,596    1,297   88.2%   71.7%        81.3%
+Issues                  50    9,198    8,105    6,519   88.1%   70.9%        80.4%
+Issues                 100   18,586   16,377   13,193   88.1%   71.0%        80.6%
+Issues                 200   36,980   32,595   26,204   88.1%   70.9%        80.4%
+
+==================================================================================
+SUMMARY
+==================================================================================
+
+Datasets: 5 x 4 sizes = 20 benchmarks
+
+Average TOON vs JSON:   82.1% of JSON tokens
+Average GCF vs JSON:    63.1% of JSON tokens
+Average GCF vs TOON:    77.0% of TOON tokens
+
+GCF wins: 20   TOON wins: 0   Ties: 0
+
+Total tokens across all benchmarks:
+  JSON:  284,357
+  TOON:  233,120
+  GCF:   176,219
+  TOON saved: 51,237 tokens (18.0%)
+  GCF saved:  108,138 tokens (38.0%)
