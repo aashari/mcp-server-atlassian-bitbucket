@@ -509,3 +509,41 @@ export function truncateForAI(
 
 	return truncatedContent + guidance.join('\n');
 }
+
+/**
+ * Keep the end of oversized text content, for output whose most useful part
+ * is at the end (e.g. a failed pipeline step log). The result, including the
+ * notice, stays within the truncateForAI limit so it is not cut again.
+ *
+ * @param content - The raw text content
+ * @param rawResponsePath - Optional path to the saved full response
+ * @returns The original content if within limits, otherwise a notice plus the tail
+ */
+export function tailForAI(
+	content: string,
+	rawResponsePath?: string | null,
+): string {
+	if (content.length <= MAX_RESPONSE_CHARS) {
+		return content;
+	}
+
+	// Reserve room for the notice, and start the tail on a line boundary
+	const budget = MAX_RESPONSE_CHARS - 1000;
+	let start = content.length - budget;
+	const nextNewline = content.indexOf('\n', start);
+	if (nextNewline !== -1 && nextNewline < start + 500) {
+		start = nextNewline + 1;
+	}
+
+	const tail = content.substring(start);
+	const notice = [
+		`*Output truncated: showing the last ${tail.length} of ${content.length} chars.*`,
+	];
+	if (rawResponsePath) {
+		notice.push(
+			`*The full raw API response is saved at: \`${rawResponsePath}\`*`,
+		);
+	}
+
+	return notice.join('\n') + '\n\n' + tail;
+}

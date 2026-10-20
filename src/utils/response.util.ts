@@ -62,7 +62,9 @@ export function saveRawResponse(
 
 	try {
 		const projectName = getProjectName();
-		const dirPath = path.join('/tmp', 'mcp', projectName);
+		// resolve, not join: on Windows '/tmp' is drive-relative, and the
+		// returned path is shown to the AI, which runs in another cwd
+		const dirPath = path.resolve('/tmp', 'mcp', projectName);
 		const filename = generateFilename();
 		const filePath = path.join(dirPath, filename);
 

@@ -42,6 +42,13 @@ export interface TransportResponse<T> {
 	rawResponsePath: string | null;
 }
 
+/**
+ * Prefer JSON, but accept other representations so endpoints that only
+ * serve text or binary (e.g. pipeline step logs) don't fail with 406.
+ */
+export const DEFAULT_ACCEPT_HEADER =
+	'application/json, text/plain;q=0.9, */*;q=0.8';
+
 // Create a contextualized logger for this file
 const transportLogger = Logger.forContext('utils/transport.util.ts');
 
@@ -149,7 +156,7 @@ export async function fetchAtlassian<T>(
 	const headers = {
 		Authorization: authHeader,
 		'Content-Type': 'application/json',
-		Accept: 'application/json',
+		Accept: DEFAULT_ACCEPT_HEADER,
 		...options.headers,
 	};
 
@@ -343,7 +350,14 @@ export async function fetchAtlassian<T>(
 			);
 			return {
 				data: textResponse as unknown as T,
-				rawResponsePath: null,
+				rawResponsePath: saveRawResponse(
+					url,
+					requestOptions.method || 'GET',
+					options.body,
+					textResponse,
+					response.status,
+					parseFloat(requestDuration),
+				),
 			};
 		}
 
@@ -376,7 +390,14 @@ export async function fetchAtlassian<T>(
 			);
 			return {
 				data: responseText as unknown as T,
-				rawResponsePath: null,
+				rawResponsePath: saveRawResponse(
+					url,
+					requestOptions.method || 'GET',
+					options.body,
+					responseText,
+					response.status,
+					parseFloat(requestDuration),
+				),
 			};
 		}
 	} catch (error) {

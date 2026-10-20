@@ -11,9 +11,20 @@ import {
 } from '../tools/atlassian.api.types.js';
 import { applyJqFilter, toOutputString } from '../utils/jq.util.js';
 import { createAuthMissingError } from '../utils/error.util.js';
+import { tailForAI } from '../utils/formatter.util.js';
 
 // Logger instance for this module
 const logger = Logger.forContext('controllers/atlassian.api.controller.ts');
+
+/**
+ * Whether a path is a pipeline step log, whose failure detail is at the end.
+ *
+ * @param path - The API path, with or without the /2.0 prefix and query string
+ */
+export function isStepLogPath(path: string): boolean {
+	const pathOnly = path.split('?')[0];
+	return /\/pipelines\/[^/]+\/steps\/[^/]+\/log\/?$/.test(pathOnly);
+}
 
 /**
  * Supported HTTP methods for API requests
@@ -124,6 +135,17 @@ async function handleRequest(
 			fetchOptions,
 		);
 		methodLogger.debug('Successfully received response');
+
+		// Text responses (logs, diffs) are returned as-is: jq and TOON/JSON
+		// encoding don't apply, and encoding would escape every newline
+		if (typeof response.data === 'string') {
+			return {
+				content: isStepLogPath(options.path)
+					? tailForAI(response.data, response.rawResponsePath)
+					: response.data,
+				rawResponsePath: response.rawResponsePath,
+			};
+		}
 
 		// Apply JQ filter if provided, otherwise return raw data
 		const result = applyJqFilter(response.data, options.jq);

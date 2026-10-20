@@ -149,6 +149,8 @@ const BB_GET_DESCRIPTION = `Read any Bitbucket data. Returns TOON format by defa
 - \`/repositories/{workspace}/{repo}/commits\` - list commits
 - \`/repositories/{workspace}/{repo}/src/{commit}/{filepath}\` - get file content
 - \`/repositories/{workspace}/{repo}/diff/{source}..{destination}\` - compare branches/commits
+- \`/repositories/{workspace}/{repo}/pipelines/{n}/steps\` - list pipeline steps (uuid, state)
+- \`/repositories/{workspace}/{repo}/pipelines/{n}/steps/{step_uuid}/log\` - step log as plain text (long logs return the tail; no jq)
 
 **Query params:** \`pagelen\` (page size), \`page\` (page number), \`q\` (filter), \`sort\` (order), \`fields\` (sparse response)
 
